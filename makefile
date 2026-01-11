@@ -15,5 +15,5 @@ all:
 	xxd -i ./source/dragon/standard/just_run.dragon > ./build_temps/dragon-just_run.c
 
 	# compile executables
-	gcc ./source/main.c -Wall -Wextra -fsanitize=address -g -o ./../scourgescript-debug.elf
-	gcc ./source/main.c -o ./../scourgescript.elf
+	gcc ./source/main.c -Wall -Wextra -fsanitize=address -g -o ./../scourge-debug.elf
+	gcc ./source/main.c -o ./../scourge.elf
