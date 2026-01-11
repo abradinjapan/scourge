@@ -160,7 +160,7 @@ void ANVIL__write_next__cell(ANVIL__workspace* workspace, ANVIL__cell cell_value
 }
 
 // write buffer
-void ANVIL__write_next__buffer(ANVIL__workspace* workspace, ANVIL__buffer buffer) {
+void ANVIL__write_next__buffer_contents(ANVIL__workspace* workspace, ANVIL__buffer buffer) {
     ANVIL__length buffer_length;
 
     // set buffer length
@@ -187,9 +187,9 @@ void ANVIL__write_next__buffer(ANVIL__workspace* workspace, ANVIL__buffer buffer
 
 /* Write Instructions */
 // write buffer data
-void ANVIL__code__buffer(ANVIL__workspace* workspace, ANVIL__buffer buffer) {
+void ANVIL__code__buffer_contents(ANVIL__workspace* workspace, ANVIL__buffer buffer) {
     // write data
-    ANVIL__write_next__buffer(workspace, buffer);
+    ANVIL__write_next__buffer_contents(workspace, buffer);
 
     return;
 }

@@ -551,7 +551,7 @@ void COMPILER__generate__user_defined_function(COMPILER__generation_workspace* w
         ((ANVIL__offset*)(*function).data_offsets.list.buffer.start)[index] = ANVIL__get__offset(anvil);
 
         // embed string
-        ANVIL__code__buffer(anvil, ((ANVIL__buffer*)accountling_function.strings.list.buffer.start)[index]);
+        ANVIL__code__buffer_contents(anvil, ((ANVIL__buffer*)accountling_function.strings.list.buffer.start)[index]);
     }
 
     return;
