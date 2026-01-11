@@ -1,0 +1,20 @@
+[ calculate buffer length ]
+scourge.buffer.calculate.length(buffer !scourge.buffer)(length !scourge.cell) = {
+    [ calculate ]
+    scourge.integer.subtract(buffer:end, buffer:start)(length)
+    scourge.integer.add(length, scourge.constant.1)(length)
+}
+
+[ calculate buffer start address ]
+scourge.buffer.calculate.start_address(length !scourge.cell, end !scourge.cell)(start !scourge.cell) = {
+    [ calculate ]
+    scourge.integer.subtract(end, length)(start)
+    scourge.integer.add(start, scourge.constant.1)(start)
+}
+
+[ calculate buffer end address ]
+scourge.buffer.calculate.end_address(start !scourge.cell, length !scourge.cell)(end !scourge.cell) = {
+    [ calculate ]
+    scourge.integer.add(start, length)(end)
+    scourge.integer.subtract(end, scourge.constant.1)(end)
+}

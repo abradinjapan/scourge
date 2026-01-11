@@ -1,0 +1,61 @@
+[ compile, install and run program ]
+scourge.just_run(program.sources !scourge.list, program.input !scourge.buffer)(compilation.error !scourge.error, program.result !scourge.buffer, program.error !scourge.buffer) = {
+    [ get buffer of buffers ]
+    scourge.list.calculate.content_buffer(program.sources)(sources.buffer)
+
+    [ compile ]
+    scourge.compiler.configure.default_compile()(settings)
+    scourge.compiler.compile(sources.buffer, settings)(byte_code, debug_information, built_in_compilation_error)
+
+    [ check for compilation error ]
+    @print_compilation_error built_in_compilation_error:occured = {
+        [ generate error ]
+        scourge.error.generate(built_in_compilation_error:message, built_in_compilation_error:location)(compilation.error)
+
+        [ skip program instalation and execution ]
+        scourge.jump.bottom(scourge.always, @scourge.master_scope)()
+    }
+
+    [ open new context & install ]
+    scourge.context.open()(context)
+    scourge.context.install_program(context, byte_code)()
+
+    [ pass input ]
+    scourge.context.set.context_input(context, program.input)()
+
+    [ run context ]
+    scourge.set(scourge.integer.n1)(instruction_count)
+    scourge.context.run(context, instruction_count)()
+
+    [ get outputs and results ]
+    scourge.context.get.context_result(context)(program.result)
+    scourge.context.get.context_error(context)(program.error)
+
+    [ clean up context ]
+    scourge.buffer.return(context)()
+
+    [ clean up program ]
+    scourge.buffer.return(byte_code)()
+}
+
+[ test one file ]
+scourge.just_run.one_file(file_path !scourge.buffer, program.input !scourge.buffer)(compilation.error !scourge.error, program.result !scourge.buffer, program.error !scourge.buffer) = {
+    [ load file ]
+    scourge.file_to_buffer(file_path)(user_code)
+
+    [ open list ]
+    scourge.structure.byte_size(user_code)(files.byte_size)
+    scourge.list.open(files.byte_size)(files)
+
+    [ append buffer ]
+    scourge.list.append.buffer(files, user_code)(files)
+
+    [ run test ]
+    scourge.just_run(files, program.input)(compilation.error, program.result, program.error)
+
+    [ clean up file ]
+    scourge.buffer.return(user_code)()
+
+    [ clean up files ]
+    scourge.list.close(files)()
+}

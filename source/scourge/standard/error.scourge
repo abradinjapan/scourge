@@ -1,0 +1,82 @@
+[ error type ]
+!scourge.error
+(
+    occured !scourge.cell,
+    json !scourge.list
+)
+
+[ setup blank error ]
+scourge.error.setup_blank()(error !scourge.error) = {
+    [ not occured ]
+    scourge.set(scourge.boolean.false)(error:occured)
+    
+    [ setup json message ]
+    scourge.set("%22;error%22;: {%0A;%09;%22;occured%22;: false,%0A;%09;%22;message%22;: %22;No error occured.%22;%0A;}%0A;")(message)
+
+    [ open list ]
+    scourge.buffer.calculate.length(message)(increase)
+    scourge.list.open(increase)(error:json)
+
+    [ append message ]
+    scourge.list.append.buffer_data(error:json, message)(error:json)
+}
+
+[ print if occured ]
+scourge.error.print_if_occured(error !scourge.error)() = {
+    [ check occurence ]
+    @print error:occured = {
+        [ print message ]
+        scourge.error.print(error)()
+    }
+}
+
+[ print if occured ]
+scourge.error.print(error !scourge.error)() = {
+    [ print message ]
+    scourge.list.calculate.content_buffer(error:json)(message)
+    scourge.print.buffer_as_string(message)()
+}
+
+[ close error ]
+scourge.error.close(error !scourge.error)() = {
+    [ deallocate error list ]
+    scourge.list.close(error:json)()
+}
+
+[ generate error ]
+scourge.error.generate(message !scourge.buffer, character.location !scourge.text.location)(error !scourge.error) = {
+    [ setup strings ]
+    scourge.set("%22;error%22;: {%0A;%09;%22;occured%22;: true,%0A;%09;%22;message%22;: %22;")(message.part.1)
+    scourge.set("%22;,%0A;%09;%22;location%22;: {%0A;%09;%09;%22;file_index%22;: ")(message.part.2)
+    scourge.set(",%0A;%09;%09;%22;line_number%22;: ")(message.part.3)
+    scourge.set(",%0A;%09;%09;%22;character_index%22;: ")(message.part.4)
+    scourge.set("%0A;%09;}%0A;}%0A;")(message.part.5)
+
+    [ setup condition ]
+    scourge.copy(scourge.true)(error:occured)
+
+    [ setup list ]
+    scourge.set(scourge.integer.1024)(increase)
+    scourge.list.open(increase)(error:json)
+
+    [ convert numbers to string buffers ]
+    scourge.cast.cell_to_decimal_string.higher_to_lower(character.location:file_index)(string.file_index)
+    scourge.cast.cell_to_decimal_string.higher_to_lower(character.location:line_number)(string.line_number)
+    scourge.cast.cell_to_decimal_string.higher_to_lower(character.location:character_index)(string.character_index)
+
+    [ generate message ]
+    scourge.list.append.buffer_data(error:json, message.part.1)(error:json)
+    scourge.list.append.buffer_data(error:json, message)(error:json)
+    scourge.list.append.buffer_data(error:json, message.part.2)(error:json)
+    scourge.list.append.buffer_data(error:json, string.file_index)(error:json)
+    scourge.list.append.buffer_data(error:json, message.part.3)(error:json)
+    scourge.list.append.buffer_data(error:json, string.line_number)(error:json)
+    scourge.list.append.buffer_data(error:json, message.part.4)(error:json)
+    scourge.list.append.buffer_data(error:json, string.character_index)(error:json)
+    scourge.list.append.buffer_data(error:json, message.part.5)(error:json)
+
+    [ delete conversion strings ]
+    scourge.buffer.return(string.file_index)()
+    scourge.buffer.return(string.line_number)()
+    scourge.buffer.return(string.character_index)()
+}

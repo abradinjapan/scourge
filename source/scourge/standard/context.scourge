@@ -1,0 +1,69 @@
+[ open context ]
+scourge.context.open()(context !scourge.buffer) = {
+    [ allocate ]
+    scourge.buffer.request(scourge.context.byte_size)(context)
+}
+
+[ calculate cell offset ]
+scourge.context.calculate.context_cell_offset(cell_ID !scourge.cell)(offset !scourge.cell) = {
+    [ calculate offset ]
+    scourge.integer.multiply(cell_ID, scourge.cell.byte_size)(offset)
+}
+
+[ calculate cell address within context ]
+scourge.context.calculate.context_cell_address(context !scourge.buffer, cell_ID !scourge.cell)(address !scourge.cell) = {
+    [ calculate cell address ]
+    scourge.context.calculate.context_cell_offset(cell_ID)(offset)
+    scourge.integer.add(context:start, offset)(address)
+}
+
+[ write context cell ]
+scourge.context.write.cell(context !scourge.buffer, cell_ID !scourge.cell, value !scourge.cell)() = {
+    [ calculate address ]
+    scourge.context.calculate.context_cell_address(context, cell_ID)(address)
+
+    [ perform write ]
+    scourge.cell_to_address(value, scourge.cell.byte_size, address)(advancement)
+}
+
+[ read context cell ]
+scourge.context.read.cell(context !scourge.buffer, cell_ID !scourge.cell)(value !scourge.cell) = {
+    [ calculate address ]
+    scourge.context.calculate.context_cell_address(context, cell_ID)(address)
+
+    [ perform write ]
+    scourge.address_to_cell(address, scourge.cell.byte_size)(value, advancement)
+}
+
+[ write context input ]
+scourge.context.set.context_input(context !scourge.buffer, input !scourge.buffer)() = {
+    [ setup variable IDs ]
+    scourge.set(scourge.integer.24)(context.input.start)
+    scourge.set(scourge.integer.25)(context.input.end)
+
+    [ write to context ]
+    scourge.context.write.cell(context, context.input.start, input:start)()
+    scourge.context.write.cell(context, context.input.end, input:end)()
+}
+
+[ read context result ]
+scourge.context.get.context_result(context !scourge.buffer)(result !scourge.buffer) = {
+    [ setup variable IDs ]
+    scourge.set(scourge.integer.26)(context.result.start)
+    scourge.set(scourge.integer.27)(context.result.end)
+
+    [ read into variables ]
+    scourge.context.read.cell(context, context.result.start)(result:start)
+    scourge.context.read.cell(context, context.result.end)(result:end)
+}
+
+[ read context result ]
+scourge.context.get.context_error(context !scourge.buffer)(error !scourge.buffer) = {
+    [ setup variable IDs ]
+    scourge.set(scourge.integer.28)(context.error.start)
+    scourge.set(scourge.integer.29)(context.error.end)
+
+    [ read into variables ]
+    scourge.context.read.cell(context, context.error.start)(error:start)
+    scourge.context.read.cell(context, context.error.end)(error:end)
+}

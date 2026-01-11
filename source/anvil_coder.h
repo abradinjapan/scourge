@@ -1,5 +1,5 @@
-#ifndef DRAGON__anvil_coder
-#define DRAGON__anvil_coder
+#ifndef SCOURGE__anvil_coder
+#define SCOURGE__anvil_coder
 
 /* Include */
 // C

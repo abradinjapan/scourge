@@ -1,8 +1,8 @@
-#ifndef DRAGON__anvil
-#define DRAGON__anvil
+#ifndef SCOURGE__anvil
+#define SCOURGE__anvil
 
 /* Include */
-#include "dragon/compiler/compiler.h"
+#include "scourge/compiler/compiler.h"
 
 /* Allocations */
 // allocations

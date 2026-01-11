@@ -1,0 +1,47 @@
+[ check if two buffer's contents are equivalent ]
+scourge.check.buffer_contents_are_equal(a !scourge.buffer, b !scourge.buffer)(valid !scourge.cell, invalid !scourge.cell) = {
+    [ calculate lengths ]
+    scourge.buffer.calculate.length(a)(a.length)
+    scourge.buffer.calculate.length(b)(b.length)
+
+    [ check length equivalency ]
+    scourge.integer.within_range(a.length, b.length, a.length)(valid, invalid)
+    scourge.jump.bottom(invalid, @scourge.master_scope)()
+
+    [ check content equivalency ]
+    [ setup currents ]
+    scourge.pack(a, a:start)(a.current !scourge.current)
+    scourge.pack(b, b:start)(b.current !scourge.current)
+
+    [ setup loop start ]
+    @check_loop.start scourge.always = {
+        [ check currents ]
+        scourge.current.within_range(a.current)(a.current.valid, a.current.invalid)
+        @check_currents a.current.invalid = {
+            [ not an error, only reachable by equivalent string ]
+            scourge.copy(scourge.true)(valid)
+            scourge.copy(scourge.false)(invalid)
+
+            [ return ]
+            scourge.jump.bottom(scourge.always, @scourge.master_scope)()
+        }
+
+        [ get characters from current ]
+        scourge.address_to_cell(a.current:progress, scourge.ascii_character.byte_size)(a.character, a.current:progress)
+        scourge.address_to_cell(b.current:progress, scourge.ascii_character.byte_size)(b.character, b.current:progress)
+
+        [ check for character equivalency ]
+        scourge.integer.within_range(a.character, b.character, a.character)(match, not_a_match)
+        @not_a_match not_a_match = {
+            [ set not equivalent ]
+            scourge.copy(scourge.false)(valid)
+            scourge.copy(scourge.true)(invalid)
+
+            [ return ]
+            scourge.jump.bottom(scourge.always, @scourge.master_scope)()
+        }
+
+        [ jump to loop start ]
+        scourge.jump.top(scourge.always, @check_loop.start)()
+    }
+}

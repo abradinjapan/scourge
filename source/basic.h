@@ -1,5 +1,5 @@
-#ifndef DRAGON__basic
-#define DRAGON__basic
+#ifndef SCOURGE__basic
+#define SCOURGE__basic
 
 /* Include */
 // C

@@ -1,0 +1,7 @@
+[ default settings for compiler ]
+scourge.compiler.configure.default_compile()(settings !scourge.compiler.settings) = {
+    [ setup default settings ]
+    scourge.copy(scourge.true)(settings:include_standard)
+    scourge.copy(scourge.false)(settings:debug_enabled)
+    scourge.copy(scourge.true)(settings:generate_kickstarter)
+}

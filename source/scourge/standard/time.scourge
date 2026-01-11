@@ -1,0 +1,30 @@
+[ add time ]
+scourge.time.add(a !scourge.time, b !scourge.time)(output !scourge.time) = {
+    [ setup constants ]
+    scourge.set(scourge.integer.1_000_000_000)(nanoseconds_per_second)
+    scourge.set(scourge.integer.n1)(max)
+
+    [ add seconds ]
+    scourge.integer.add(a:seconds, b:seconds)(output:seconds)
+
+    [ add nanoseconds ]
+    scourge.integer.add(a:nanoseconds, b:nanoseconds)(total_nanoseconds)
+
+    [ check if total nanoseconds is greater than or equal to one second ]
+    scourge.integer.within_range(nanoseconds_per_second, total_nanoseconds, max)(has_overflowed, has_not_overflowed)
+
+    [ if overflowed ]
+    @has_overflowed has_overflowed = {
+        [ calculate total seconds of nanoseconds ]
+        scourge.integer.divide(total_nanoseconds, nanoseconds_per_second)(excess_seconds)
+
+        [ add total number of seconds to time ]
+        scourge.integer.add(output:seconds, excess_seconds)(output:seconds)
+
+        [ calculate remaining nanoseconds ]
+        scourge.integer.modulous(total_nanoseconds, nanoseconds_per_second)(total_nanoseconds)
+    }
+
+    [ setup nanoseconds ]
+    scourge.copy(total_nanoseconds)(output:nanoseconds)
+}

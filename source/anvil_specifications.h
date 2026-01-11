@@ -1,5 +1,5 @@
-#ifndef DRAGON__interpreter_specifications
-#define DRAGON__interpreter_specifications
+#ifndef SCOURGE__interpreter_specifications
+#define SCOURGE__interpreter_specifications
 
 /* Include */
 #include "basic.h"

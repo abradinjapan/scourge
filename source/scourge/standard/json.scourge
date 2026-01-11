@@ -1,0 +1,1532 @@
+[
+    Compile
+]
+[ master type ]
+!scourge.json
+(
+    [ translated data ]
+    nodes !scourge.cell [ type TODO ]
+)
+
+[ translation data ]
+!scourge.json.workspace
+(
+    [ defines ]
+    lexling.types !scourge.json.lexling.types,
+    parsling.types !scourge.json.parsling.types,
+
+    [ error data ]
+    error !scourge.error,
+
+    [ lexing data ]
+    current_character !scourge.current,
+    lexlings !scourge.json.lexlings,
+
+    [ parsing data ]
+    current_lexling !scourge.current,
+    parslings !scourge.json.parslings
+)
+
+[ compile ]
+scourge.json.compile(text !scourge.buffer, verbose !scourge.cell)(workspace !scourge.json.workspace) = {
+    [ setup json ]
+    scourge.pack.null()(json !scourge.json)
+
+    [ setup workspace ]
+    scourge.pack.null()(workspace !scourge.json.workspace)
+    scourge.pack(text, text:start)(workspace:current_character !scourge.current)
+    scourge.json.lexling.types.setup()(workspace:lexling.types)
+    scourge.json.parsling.types.setup()(workspace:parsling.types)
+
+    [ lex ]
+    scourge.json.compile.lex(json, workspace)(json, workspace)
+    @verbose.lexlings verbose = {
+        scourge.json.compile.lex.print(workspace)()
+    }
+
+    [ parse ]
+    scourge.json.compile.parse(workspace)(workspace)
+    @verbose.parslings verbose = {
+        scourge.json.compile.print.parslings(workspace)()
+    }
+}
+
+[ setup error for json reader ]
+scourge.json.compile.raise_error(workspace !scourge.json.workspace, message !scourge.buffer)(workspace !scourge.json.workspace) = {
+    [ setup strings ]
+    scourge.set("%22;error%22;: {%0A;%09;%22;occured%22;: true,%0A;%09;%22;message%22;: %22;")(header)
+    scourge.set("%22;%0A;}%0A;")(footer)
+
+    [ open list ]
+    scourge.set(scourge.integer.1024)(increase)
+    scourge.copy(scourge.true)(workspace:error:occured)
+    scourge.list.open(increase)(workspace:error:json)
+
+    [ create error json ]
+    scourge.list.append.buffer_data(workspace:error:json, header)(workspace:error:json) [ append header ]
+    scourge.list.append.buffer_data(workspace:error:json, message)(workspace:error:json) [ append message ]
+    scourge.list.append.buffer_data(workspace:error:json, footer)(workspace:error:json) [ append footer ]
+}
+
+[ close workspace ]
+scourge.json.compile.close.workspace(workspace !scourge.json.workspace)() = {
+    [ close lexlings ]
+    scourge.json.lexlings.close(workspace:lexlings)()
+
+    [ close parslings ]
+    scourge.json.parslings.close(workspace, workspace:parslings)()
+
+    [ close error ]
+    scourge.error.close(workspace:error)()
+}
+
+
+
+[
+    Lexing
+]
+[ lexlings type ]
+!scourge.json.lexlings
+(
+    list !scourge.list [ !scourge.json.lexling ]
+)
+
+[ open lexlings ]
+scourge.json.lexlings.open()(lexlings !scourge.json.lexlings) = {
+    [ create dummy lexling ]
+    scourge.pack.null()(lexling.dummy !scourge.json.lexling)
+
+    [ calculate current ]
+    scourge.set(scourge.integer.1024)(increase)
+    scourge.structure.byte_size(lexling.dummy)(lexling.size)
+    scourge.integer.multiply(increase, lexling.size)(increase)
+
+    [ open list ]
+    scourge.list.open(increase)(lexlings:list)
+}
+
+[ close lexlings ]
+scourge.json.lexlings.close(lexlings !scourge.json.lexlings)() = {
+    [ close list ]
+    scourge.list.close(lexlings:list)()
+}
+
+[ print lexlings ]
+scourge.json.lexlings.print(lexlings !scourge.json.lexlings)() = {
+    [ TODO ]
+}
+
+[ lexling type ]
+!scourge.json.lexling
+(
+    raw !scourge.buffer,
+    type !scourge.cell,
+    location !scourge.text.location
+)
+
+[ print lexling ]
+scourge.json.lexling.print(lexling !scourge.json.lexling)() = {
+    [ setup strings ]
+    scourge.set("[ ")(header)
+    scourge.set(", ")(separator)
+    scourge.set(" ]")(footer)
+
+    [ print data ]
+    scourge.print.buffer_as_string(header)()
+    scourge.print.integer.unsigned(lexling:type)()
+    scourge.print.buffer_as_string(separator)()
+    scourge.print.buffer_as_string(lexling:raw)()
+    scourge.print.buffer_as_string(footer)()
+}
+
+[ append lexling ]
+scourge.json.append.lexling(list !scourge.list, lexling !scourge.json.lexling)(list !scourge.list) = {
+    [ append members ]
+    scourge.list.append.buffer(list, lexling:raw)(list)
+    scourge.list.append.cell(list, lexling:type)(list)
+    scourge.json.append.location(list, lexling:location)(list)
+}
+
+[ append lexling location ]
+scourge.json.append.location(list !scourge.list, location !scourge.text.location)(list !scourge.list) = {
+    scourge.list.append.cell(list, location:file_index)(list)
+    scourge.list.append.cell(list, location:line_number)(list)
+    scourge.list.append.cell(list, location:character_index)(list)
+}
+
+[ lexling type structure ]
+!scourge.json.lexling.types
+(
+    invalid !scourge.cell,
+    left_square_bracket !scourge.cell,
+    right_square_bracket !scourge.cell,
+    left_curly_bracket !scourge.cell,
+    right_curly_bracket !scourge.cell,
+    string !scourge.cell,
+    integer !scourge.cell,
+    comma !scourge.cell,
+    colon !scourge.cell,
+    name !scourge.cell,
+    end_of_file !scourge.cell
+)
+
+[ setup json lexling type structure ]
+scourge.json.lexling.types.setup()(types !scourge.json.lexling.types) = {
+    [ set values ]
+    scourge.pack.increment(scourge.constant.0, scourge.constant.1)(types !scourge.json.lexling.types)
+}
+
+[ lex json ]
+scourge.json.compile.lex(json !scourge.json, workspace !scourge.json.workspace)(json !scourge.json, workspace !scourge.json.workspace) = {
+    [ setup data ]
+    scourge.set(scourge.integer.32)(whitespace.range.end)
+    scourge.pack(scourge.constant.0, whitespace.range.end)(whitespace !scourge.buffer)
+    scourge.set(scourge.hexadecimal.7B)(left_curly_bracket)
+    scourge.set(scourge.hexadecimal.7D)(right_curly_bracket)
+    scourge.set(scourge.hexadecimal.5B)(left_square_bracket)
+    scourge.set(scourge.hexadecimal.5D)(right_square_bracket)
+    scourge.set(scourge.hexadecimal.22)(double_quote)
+    scourge.set(scourge.hexadecimal.2C)(comma)
+    scourge.set(scourge.hexadecimal.3A)(colon)
+    scourge.set(scourge.hexadecimal.30)(decimal_digits.start)
+    scourge.set(scourge.hexadecimal.39)(decimal_digits.end)
+    scourge.pack.null()(null_location !scourge.text.location)
+
+    [ open lexlings ]
+    scourge.json.lexlings.open()(workspace:lexlings)
+
+    [ setup loop start ]
+    @lexing.loop.start
+
+    [ check if current is in range ]
+    scourge.current.within_range(workspace:current_character)(should_not_quit, should_quit)
+    scourge.jump(should_quit, @lexing.loop.exit)()
+
+    [ get character ]
+    scourge.address_to_cell(workspace:current_character:progress, scourge.ascii_character.byte_size)(character, advancement)
+
+    [ if whitespace, go back to beginning of loop ]
+    scourge.integer.within_range(whitespace:start, character, whitespace:end)(whitespace_detected, no_whitespace_detected)
+    @whitespace whitespace_detected = {
+        [ next character ]
+        scourge.copy(advancement)(workspace:current_character:progress)
+
+        [ jump ]
+        scourge.jump(whitespace_detected, @lexing.loop.start)()
+    }
+
+    [ otherwise, detect lexling ]
+    [ detect left_curly_bracket ]
+    scourge.integer.within_range(left_curly_bracket, character, left_curly_bracket)(detected, not_detected)
+    @check.left_curly_bracket detected = {
+        [ create lexling ]
+        scourge.pack(workspace:current_character:progress, workspace:current_character:progress)(text !scourge.buffer)
+        scourge.pack(text, workspace:lexling.types:left_curly_bracket, null_location)(lexling !scourge.json.lexling)
+
+        [ next character ]
+        scourge.copy(advancement)(workspace:current_character:progress)
+
+        [ append lexling ]
+        scourge.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
+
+        [ jump to loop start ]
+        scourge.jump(scourge.always, @lexing.loop.start)()
+    }
+
+    [ detect right_curly_bracket ]
+    scourge.integer.within_range(right_curly_bracket, character, right_curly_bracket)(detected, not_detected)
+    @check.right_curly_bracket detected = {
+        [ create lexling ]
+        scourge.pack(workspace:current_character:progress, workspace:current_character:progress)(text !scourge.buffer)
+        scourge.pack(text, workspace:lexling.types:right_curly_bracket, null_location)(lexling !scourge.json.lexling)
+
+        [ next character ]
+        scourge.copy(advancement)(workspace:current_character:progress)
+
+        [ append lexling ]
+        scourge.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
+
+        [ jump to loop start ]
+        scourge.jump(scourge.always, @lexing.loop.start)()
+    }
+
+    [ detect left_square_bracket ]
+    scourge.integer.within_range(left_square_bracket, character, left_square_bracket)(detected, not_detected)
+    @check.left_square_bracket detected = {
+        [ create lexling ]
+        scourge.pack(workspace:current_character:progress, workspace:current_character:progress)(text !scourge.buffer)
+        scourge.pack(text, workspace:lexling.types:left_square_bracket, null_location)(lexling !scourge.json.lexling)
+
+        [ next character ]
+        scourge.copy(advancement)(workspace:current_character:progress)
+
+        [ append lexling ]
+        scourge.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
+
+        [ jump to loop start ]
+        scourge.jump(scourge.always, @lexing.loop.start)()
+    }
+
+    [ detect right_square_bracket ]
+    scourge.integer.within_range(right_square_bracket, character, right_square_bracket)(detected, not_detected)
+    @check.right_square_bracket detected = {
+        [ create lexling ]
+        scourge.pack(workspace:current_character:progress, workspace:current_character:progress)(text !scourge.buffer)
+        scourge.pack(text, workspace:lexling.types:right_square_bracket, null_location)(lexling !scourge.json.lexling)
+
+        [ next character ]
+        scourge.copy(advancement)(workspace:current_character:progress)
+
+        [ append lexling ]
+        scourge.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
+
+        [ jump to loop start ]
+        scourge.jump(scourge.always, @lexing.loop.start)()
+    }
+    
+    [ detect comma ]
+    scourge.integer.within_range(comma, character, comma)(detected, not_detected)
+    @check.comma detected = {
+        [ create lexling ]
+        scourge.pack(workspace:current_character:progress, workspace:current_character:progress)(text !scourge.buffer)
+        scourge.pack(text, workspace:lexling.types:comma, null_location)(lexling !scourge.json.lexling)
+
+        [ next character ]
+        scourge.copy(advancement)(workspace:current_character:progress)
+
+        [ append lexling ]
+        scourge.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
+
+        [ jump to loop start ]
+        scourge.jump(scourge.always, @lexing.loop.start)()
+    }
+    
+    [ detect colon ]
+    scourge.integer.within_range(colon, character, colon)(detected, not_detected)
+    @check.colon detected = {
+        [ create lexling ]
+        scourge.pack(workspace:current_character:progress, workspace:current_character:progress)(text !scourge.buffer)
+        scourge.pack(text, workspace:lexling.types:colon, null_location)(lexling !scourge.json.lexling)
+
+        [ next character ]
+        scourge.copy(advancement)(workspace:current_character:progress)
+
+        [ append lexling ]
+        scourge.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
+
+        [ jump to loop start ]
+        scourge.jump(scourge.always, @lexing.loop.start)()
+    }
+
+    [ detect string ]
+    scourge.integer.within_range(double_quote, character, double_quote)(detected, not_detected)
+    @check.double_quote detected = {
+        [ setup lexling start ]
+        scourge.copy(workspace:current_character:progress)(text.start)
+
+        [ advance progress past starting quote ]
+        scourge.copy(advancement)(workspace:current_character:progress)
+
+        [ setup search for double quote loop ]
+        @string.loop.start
+
+        [ check for end of characters ]
+        scourge.current.within_range(workspace:current_character)(more_characters, ran_out_of_characters)
+        @string.ran_out_of_characters ran_out_of_characters = {
+            [ setup error ]
+            scourge.set("Lexing Error: A string ran out of characters.")(error_message)
+            scourge.json.compile.raise_error(workspace, error_message)(workspace)
+
+            [ exit loop ]
+            scourge.jump(scourge.always, @lexing.loop.exit)()
+        }
+
+        [ check for ending quote ]
+        scourge.address_to_cell(workspace:current_character:progress, scourge.ascii_character.byte_size)(character, advancement)
+        scourge.integer.within_range(double_quote, character, double_quote)(detected, not_detected)
+        @check.string.end_quote detected = {
+            [ setup lexling ]
+            scourge.copy(workspace:current_character:progress)(text.end)
+            scourge.pack(text.start, text.end)(text !scourge.buffer)
+            scourge.pack(text, workspace:lexling.types:string, null_location)(lexling !scourge.json.lexling)
+
+            [ next character ]
+            scourge.copy(advancement)(workspace:current_character:progress)
+
+            [ append lexling ]
+            scourge.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
+
+            [ jump to loop start ]
+            scourge.jump(scourge.always, @lexing.loop.start)()
+        }
+
+        [ not detected, go to loop start to check next character ]
+        scourge.copy(advancement)(workspace:current_character:progress)
+        scourge.jump(scourge.always, @string.loop.start)()
+    }
+
+    [ detect integer ]
+    scourge.integer.within_range(decimal_digits.start, character, decimal_digits.end)(detected, not_detected)
+    @check.decimal_digit detected = {
+        [ setup lexling start ]
+        scourge.copy(workspace:current_character:progress)(text.start)
+
+        [ advance progress past starting digit ]
+        scourge.copy(advancement)(workspace:current_character:progress)
+
+        [ setup search for decimal digits loop ]
+        @decimal_digit.loop.start
+
+        [ check for end of characters ]
+        scourge.current.within_range(workspace:current_character)(more_characters, ran_out_of_characters)
+        @decimal_digit.ran_out_of_characters ran_out_of_characters = {
+            [ exit loop ]
+            scourge.jump(scourge.always, @lexing.decimal_digit.finished)()
+        }
+
+        [ check for next character ]
+        scourge.address_to_cell(workspace:current_character:progress, scourge.ascii_character.byte_size)(character, advancement)
+        scourge.integer.within_range(decimal_digits.start, character, decimal_digits.end)(detected, not_detected)
+        @decimal_digits.next_character detected = {
+            [ next character ]
+            scourge.copy(advancement)(workspace:current_character:progress)
+
+            [ jump to loop start ]
+            scourge.jump(scourge.always, @decimal_digit.loop.start)()
+        }
+
+        [ no more characters detected ]
+        [ setup offset ]
+        @lexing.decimal_digit.finished
+
+        [ setup lexling ]
+        scourge.integer.subtract(workspace:current_character:progress, scourge.constant.1)(text.end)
+        scourge.pack(text.start, text.end)(text !scourge.buffer)
+        scourge.pack(text, workspace:lexling.types:integer, null_location)(lexling !scourge.json.lexling)
+
+        [ append lexling ]
+        scourge.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
+
+        [ jump to start of lexing loop ]
+        scourge.jump(scourge.always, @lexing.loop.start)()
+    }
+
+    [ detect name ]
+    scourge.json.compile.lex.check_for_name_character(character)(detected, not_detected)
+    @check.name detected = {
+        [ setup lexling start ]
+        scourge.copy(workspace:current_character:progress)(text.start)
+
+        [ advance progress past starting character ]
+        scourge.copy(advancement)(workspace:current_character:progress)
+
+        [ setup search for characters loop ]
+        @name.loop.start
+
+        [ check for end of characters ]
+        scourge.current.within_range(workspace:current_character)(more_characters, ran_out_of_characters)
+        @name.ran_out_of_characters ran_out_of_characters = {
+            [ exit loop ]
+            scourge.jump(scourge.always, @lexing.name.finished)()
+        }
+
+        [ check for next character ]
+        scourge.address_to_cell(workspace:current_character:progress, scourge.ascii_character.byte_size)(character, advancement)
+        scourge.json.compile.lex.check_for_name_character(character)(detected, not_detected)
+        @name.next_character detected = {
+            [ next character ]
+            scourge.copy(advancement)(workspace:current_character:progress)
+
+            [ jump to loop start ]
+            scourge.jump(scourge.always, @name.loop.start)()
+        }
+
+        [ no more characters detected ]
+        [ setup offset ]
+        @lexing.name.finished
+
+        [ setup lexling ]
+        scourge.integer.subtract(workspace:current_character:progress, scourge.constant.1)(text.end)
+        scourge.pack(text.start, text.end)(text !scourge.buffer)
+        scourge.pack(text, workspace:lexling.types:name, null_location)(lexling !scourge.json.lexling)
+
+        [ append lexling ]
+        scourge.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
+
+        [ jump to start of lexing loop ]
+        scourge.jump(scourge.always, @lexing.loop.start)()
+    }
+
+    [ if nothing was matched, set error ]
+    scourge.set("Lexing Error: No lexling was matched.")(error_message)
+    scourge.json.compile.raise_error(workspace, error_message)(workspace)
+
+    [ setup lexing loop end ]
+    @lexing.loop.exit
+
+    [ setup end of file lexling ]
+    scourge.set("[end_of_file]")(end_of_file_message)
+    scourge.pack(end_of_file_message, workspace:lexling.types:end_of_file, null_location)(lexling !scourge.json.lexling)
+    scourge.json.append.lexling(workspace:lexlings:list, lexling)(workspace:lexlings:list)
+}
+
+[ detect and get name character ]
+scourge.json.compile.lex.check_for_name_character(character !scourge.cell)(valid !scourge.cell, invalid !scourge.cell) = {
+    [ setup name ranges ]
+    scourge.set(scourge.hexadecimal.41)(uppercase_start)
+    scourge.set(scourge.hexadecimal.5A)(uppercase_end)
+    scourge.set(scourge.hexadecimal.61)(lowercase_start)
+    scourge.set(scourge.hexadecimal.7A)(lowercase_end)
+    scourge.set(scourge.hexadecimal.30)(numbers_start)
+    scourge.set(scourge.hexadecimal.39)(numbers_end)
+    scourge.set(scourge.hexadecimal.5F)(underscore)
+
+    [ check ranges ]
+    [ check uppercase ]
+    scourge.integer.within_range(uppercase_start, character, uppercase_end)(valid, invalid)
+    scourge.jump(valid, @exit)()
+
+    [ check lowercase ]
+    scourge.integer.within_range(lowercase_start, character, lowercase_end)(valid, invalid)
+    scourge.jump(valid, @exit)()
+
+    [ check numbers ]
+    scourge.integer.within_range(numbers_start, character, numbers_end)(valid, invalid)
+    scourge.jump(valid, @exit)()
+
+    [ check underscore ]
+    scourge.integer.within_range(underscore, character, underscore)(valid, invalid)
+    scourge.jump(valid, @exit)()
+
+    [ not found ]
+    scourge.copy(scourge.false)(valid)
+    scourge.copy(scourge.true)(invalid)
+
+    [ exit ]
+    @exit
+}
+
+[ print lexling list ]
+scourge.json.compile.lex.print(workspace !scourge.json.workspace)() = {
+    [ setup variables ]
+    scourge.pack.null()(lexling.dummy !scourge.json.lexling)
+    scourge.structure.byte_size(lexling.dummy)(lexling.size)
+
+    [ setup current ]
+    scourge.list.calculate.content_buffer(workspace:lexlings:list)(content)
+    scourge.pack(content, content:start)(current !scourge.current)
+
+    [ setup loop start ]
+    @loop_start
+
+    [ check for end of current ]
+    scourge.current.within_range(current)(should_not_quit, should_quit)
+    scourge.jump(should_quit, @loop_exit)()
+
+    [ get lexling ]
+    scourge.buffer.calculate.end_address(current:progress, lexling.size)(structure.end)
+    scourge.pack(current:progress, structure.end)(lexling_source !scourge.buffer)
+    scourge.buffer_to_structure(lexling_source)(lexling !scourge.json.lexling)
+
+    [ next lexling ]
+    scourge.integer.add(current:progress, lexling.size)(current:progress)
+
+    [ print lexling ]
+    scourge.json.lexling.print(lexling)()
+    scourge.print.new_line()()
+
+    [ jump to start of loop ]
+    scourge.jump(scourge.always, @loop_start)()
+
+    [ setup loop end ]
+    @loop_exit
+}
+
+
+
+[
+    Parsing
+]
+[ parslings ]
+!scourge.json.parslings
+(
+    root !scourge.json.parsling
+)
+
+[ parsling ]
+!scourge.json.parsling
+(
+    type !scourge.cell,
+    name !scourge.json.lexling,
+    value.datum !scourge.json.lexling,
+    value.members !scourge.list [ !scourge.json.parsling ]
+)
+
+[ append parsling ]
+scourge.json.append.parsling(list !scourge.list, parsling !scourge.json.parsling)(list !scourge.list) = {
+    [ append members ]
+    scourge.list.append.cell(list, parsling:type)(list)
+    scourge.json.append.lexling(list, parsling:name)(list)
+    scourge.json.append.lexling(list, parsling:value.datum)(list)
+    scourge.list.append.list(list, parsling:value.members)(list)
+}
+
+[ close parslings ]
+scourge.json.parslings.close(workspace !scourge.json.workspace, parslings !scourge.json.parslings)() = {
+    [ close root parsling and recurse ]
+    scourge.json.close.parsling(workspace, parslings:root)()
+}
+
+[ close parsling ]
+scourge.json.close.parsling(workspace !scourge.json.workspace, master_parsling !scourge.json.parsling)() = {
+    [ check if parsling is an array or object ]
+    scourge.integer.within_range(workspace:parsling.types:object, master_parsling:type, workspace:parsling.types:array)(is_list_type, is_not_list_type)
+    @is_list_type is_list_type = {
+        [ close by loop ]
+        [ setup current ]
+        scourge.structure.byte_size(master_parsling)(parsling.byte_size)
+        scourge.list.calculate.content_buffer(master_parsling:value.members)(content_buffer)
+        scourge.pack(content_buffer, content_buffer:start)(current_member !scourge.current)
+
+        [ setup loop ]
+        @is_list_type.loop scourge.always = {
+            [ check for end of loop ]
+            scourge.current.within_range(current_member)(should_not_quit, should_quit)
+            scourge.jump.bottom(should_quit, @is_list_type.loop)()
+
+            [ get sub-parsling ]
+            [ calculate structure ]
+            scourge.buffer.calculate.end_address(current_member:progress, parsling.byte_size)(parsling.end)
+            scourge.pack(current_member:progress, parsling.end)(parsling.buffer !scourge.buffer)
+
+            [ setup structure ]
+            scourge.buffer_to_structure(parsling.buffer)(found_parsling !scourge.json.parsling)
+
+            [ close parsling ]
+            scourge.json.close.parsling(workspace, found_parsling)()
+
+            [ advance current ]
+            scourge.integer.add(current_member:progress, parsling.byte_size)(current_member:progress)
+
+            [ jump to start of loop ]
+            scourge.jump.top(scourge.always, @is_list_type.loop)()
+        }
+
+        [ close list ]
+        scourge.list.close(master_parsling:value.members)()
+    }
+}
+
+[ parsling types ]
+!scourge.json.parsling.types
+(
+    invalid !scourge.cell,
+    object !scourge.cell,
+    array !scourge.cell,
+    string !scourge.cell,
+    integer !scourge.cell,
+    boolean_false !scourge.cell,
+    boolean_true !scourge.cell,
+    null !scourge.cell
+)
+
+[ setup parsling types ]
+scourge.json.parsling.types.setup()(types !scourge.json.parsling.types) = {
+    [ setup data ]
+    scourge.pack.increment(scourge.constant.0, scourge.constant.1)(types !scourge.json.parsling.types)
+}
+
+[ parse json lexlings ]
+scourge.json.compile.parse(workspace !scourge.json.workspace)(workspace !scourge.json.workspace) = {
+    [ setup current ]
+    scourge.list.calculate.content_buffer(workspace:lexlings:list)(lexlings_buffer)
+    scourge.pack(lexlings_buffer, lexlings_buffer:start)(workspace:current_lexling !scourge.current)
+
+    [ parse ]
+    scourge.json.compile.parse.object_body(workspace)(workspace, workspace:parslings:root)
+
+    [ consolidate all objects into one buffer ]
+    [ TODO ]
+}
+
+[ parse object ]
+scourge.json.compile.parse.object_body(workspace !scourge.json.workspace)(workspace !scourge.json.workspace, output !scourge.json.parsling) = {
+    [ setup strings ]
+    scourge.set("true")(string.true)
+    scourge.set("false")(string.false)
+    scourge.set("null")(string.null)
+
+    [ setup type ]
+    scourge.copy(workspace:parsling.types:object)(output:type)
+
+    [ null init output name ]
+    scourge.pack.null()(output:name !scourge.json.lexling)
+
+    [ parse contents ]
+    [ check for opener ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:left_curly_bracket, scourge.true)(workspace, recent_lexling, valid, invalid)
+    @missing_opener invalid = {
+        [ setup error ]
+        scourge.set("Parsing Error: An object did not start with an opening left curly bracket.")(error_message)
+        scourge.json.compile.raise_error(workspace, error_message)(workspace)
+
+        [ exit function ]
+        scourge.jump(scourge.always, @exit)()
+    }
+
+    [ allocate members list ]
+    scourge.pack.null()(dummy_parsling !scourge.json.parsling)
+    scourge.structure.byte_size(dummy_parsling)(parsling.size)
+    scourge.integer.multiply(parsling.size, scourge.constant.64)(increase)
+    scourge.list.open(increase)(output:value.members)
+
+    [ setup member index ]
+    scourge.copy(scourge.constant.0)(member_index)
+
+    [ get members ]
+    [ setup loop offset ]
+    @check_for_members.loop_start
+
+    [ check for closing right curly bracket ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:right_curly_bracket, scourge.false)(workspace, recent_lexling, valid, invalid)
+    scourge.jump(valid, @check_for_members.loop_exit)()
+
+    [ check for comma ]
+    scourge.integer.within_range(scourge.constant.0, member_index, scourge.constant.0)(comma_not_required, comma_required)
+    @comma_required comma_required = {
+        [ check for comma ]
+        scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:comma, scourge.true)(workspace, recent_lexling, valid, invalid)
+        @missing_comma invalid = {
+            [ setup error ]
+            scourge.set("Parsing Error: When searching for the members of a json object, a comma was missing.")(error_message)
+            scourge.json.compile.raise_error(workspace, error_message)(workspace)
+
+            [ exit function ]
+            scourge.jump(scourge.always, @exit)()
+        }
+    }
+
+    [ check for name string ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:string, scourge.true)(workspace, name, valid, invalid)
+    @missing_name invalid = {
+        [ setup error ]
+        scourge.set("Parsing Error: When searching for the members of a json object, an invalid lexling was detected.")(error_message)
+        scourge.json.compile.raise_error(workspace, error_message)(workspace)
+
+        [ exit function ]
+        scourge.jump(scourge.always, @exit)()
+    }
+
+    [ setup pushing parsling ]
+    scourge.pack.null()(pushing_parsling !scourge.json.parsling)
+    scourge.pack.null()(null_list !scourge.list)
+
+    [ setup name ]
+    scourge.copy(name)(pushing_parsling:name)
+
+    [ next index ]
+    scourge.integer.add(member_index, scourge.constant.1)(member_index)
+
+    [ check for colon ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:colon, scourge.true)(workspace, recent_lexling, valid, invalid)
+    @missing_colon invalid = {
+        [ setup error ]
+        scourge.set("Parsing Error: When searching for the colon of a json member, an invalid lexling was detected.")(error_message)
+        scourge.json.compile.raise_error(workspace, error_message)(workspace)
+
+        [ exit function ]
+        scourge.jump(scourge.always, @exit)()
+    }
+
+    [ detect type ]
+    [ detect object ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:left_curly_bracket, scourge.false)(workspace, recent_lexling, valid, invalid)
+    @found_new_object valid = {
+        [ parse sub-object ]
+        scourge.json.compile.parse.object_body(workspace)(workspace, temp_parsling)
+
+        [ check for error ]
+        scourge.jump(workspace:error:occured, @exit)()
+
+        [ setup object name ]
+        scourge.copy(pushing_parsling:name)(temp_parsling:name)
+
+        [ append object ]
+        scourge.json.append.parsling(output:value.members, temp_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ detect array ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:left_square_bracket, scourge.false)(workspace, recent_lexling, valid, invalid)
+    @found_new_array valid = {
+        [ parse array ]
+        scourge.json.compile.parse.array(workspace)(workspace, temp_parsling)
+
+        [ check for error ]
+        scourge.jump(workspace:error:occured, @exit)()
+
+        [ setup array name ]
+        scourge.copy(pushing_parsling:name)(temp_parsling:name)
+
+        [ append array ]
+        scourge.json.append.parsling(output:value.members, temp_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ detect number ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:integer, scourge.true)(workspace, recent_lexling, valid, invalid)
+    @found_new_number valid = {
+        [ setup data ]
+        scourge.pack(workspace:parsling.types:integer, name, recent_lexling, null_list)(pushing_parsling !scourge.json.parsling)
+
+        [ append object ]
+        scourge.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ detect string ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:string, scourge.true)(workspace, recent_lexling, valid, invalid)
+    @found_new_string valid = {
+        [ setup data ]
+        scourge.pack(workspace:parsling.types:string, name, recent_lexling, null_list)(pushing_parsling !scourge.json.parsling)
+
+        [ append object ]
+        scourge.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ detect boolean true ]
+    scourge.json.compile.parse.check_current_lexling.by_value(workspace, string.true, scourge.true)(workspace, recent_lexling, valid, invalid)
+    @found_new_boolean_true valid = {
+        [ setup data ]
+        scourge.pack(workspace:parsling.types:boolean_true, name, recent_lexling, null_list)(pushing_parsling !scourge.json.parsling)
+
+        [ append object ]
+        scourge.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ detect boolean false ]
+    scourge.json.compile.parse.check_current_lexling.by_value(workspace, string.false, scourge.true)(workspace, recent_lexling, valid, invalid)
+    @found_new_boolean_false valid = {
+        [ setup data ]
+        scourge.pack(workspace:parsling.types:boolean_false, name, recent_lexling, null_list)(pushing_parsling !scourge.json.parsling)
+
+        [ append object ]
+        scourge.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ detect null data ]
+    scourge.json.compile.parse.check_current_lexling.by_value(workspace, string.null, scourge.true)(workspace, recent_lexling, valid, invalid)
+    @found_new_null valid = {
+        [ setup data ]
+        scourge.pack(workspace:parsling.types:null, name, recent_lexling, null_list)(pushing_parsling !scourge.json.parsling)
+
+        [ append object ]
+        scourge.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ invalid value lexling ]
+    [ raise error ]
+    scourge.set("Parsing Error: When breaking down a json object, an unusable lexling was found.")(error_message)
+    scourge.json.compile.raise_error(workspace, error_message)(workspace)
+
+    [ exit function ]
+    scourge.jump(scourge.always, @exit)()
+
+    [ exit loop ]
+    @check_for_members.loop_exit
+
+    [ skip past closer ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:right_curly_bracket, scourge.true)(workspace, recent_lexling, valid, invalid)
+
+    [ exit function ]
+    @exit
+}
+
+[ check for any value ]
+scourge.json.compile.parse.array(workspace !scourge.json.workspace)(workspace !scourge.json.workspace, output !scourge.json.parsling) = {
+    [ setup strings ]
+    scourge.set("true")(string.true)
+    scourge.set("false")(string.false)
+    scourge.set("null")(string.null)
+
+    [ setup type ]
+    scourge.copy(workspace:parsling.types:array)(output:type)
+
+    [ parse contents ]
+    [ check for opener ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:left_square_bracket, scourge.true)(workspace, recent_lexling, valid, invalid)
+    @missing_opener invalid = {
+        [ setup error ]
+        scourge.set("Parsing Error: An array did not start with an opening left square bracket.")(error_message)
+        scourge.json.compile.raise_error(workspace, error_message)(workspace)
+
+        [ exit function ]
+        scourge.jump.bottom(scourge.always, @scourge.master_scope)()
+    }
+
+    [ allocate members list ]
+    scourge.pack.null()(dummy_parsling !scourge.json.parsling)
+    scourge.structure.byte_size(dummy_parsling)(parsling.size)
+    scourge.integer.multiply(parsling.size, scourge.constant.64)(increase)
+    scourge.list.open(increase)(output:value.members)
+
+    [ setup member index ]
+    scourge.copy(scourge.constant.0)(member_index)
+
+    [ get members ]
+    [ setup loop offset ]
+    @check_for_members.loop_start
+
+    [ check for closing right square bracket ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:right_square_bracket, scourge.false)(workspace, recent_lexling, valid, invalid)
+    scourge.jump(valid, @check_for_members.loop_exit)()
+
+    [ check for comma ]
+    scourge.integer.within_range(scourge.constant.0, member_index, scourge.constant.0)(comma_not_required, comma_required)
+    @comma_required comma_required = {
+        [ check for comma ]
+        scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:comma, scourge.true)(workspace, recent_lexling, valid, invalid)
+        @missing_comma invalid = {
+            [ setup error ]
+            scourge.set("Parsing Error: When searching for the members of a json array, a comma was missing.")(error_message)
+            scourge.json.compile.raise_error(workspace, error_message)(workspace)
+
+            [ exit function ]
+            scourge.jump.bottom(scourge.always, @scourge.master_scope)()
+        }
+    }
+
+    [ setup pushing parsling ]
+    scourge.pack.null()(pushing_parsling !scourge.json.parsling)
+    scourge.pack.null()(name !scourge.json.lexling)
+    scourge.pack.null()(null_list !scourge.list)
+
+    [ next index ]
+    scourge.integer.add(member_index, scourge.constant.1)(member_index)
+
+    [ detect type ]
+    [ detect object ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:left_curly_bracket, scourge.false)(workspace, recent_lexling, valid, invalid)
+    @found_new_object valid = {
+        [ parse sub-object ]
+        scourge.json.compile.parse.object_body(workspace)(workspace, temp_parsling)
+
+        [ check for error ]
+        scourge.jump.bottom(workspace:error:occured, @scourge.master_scope)()
+
+        [ setup object name ]
+        scourge.copy(pushing_parsling:name)(temp_parsling:name)
+
+        [ append object ]
+        scourge.json.append.parsling(output:value.members, temp_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ detect array ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:left_square_bracket, scourge.false)(workspace, recent_lexling, valid, invalid)
+    @found_new_array valid = {
+        [ parse sub-array ]
+        scourge.json.compile.parse.array(workspace)(workspace, temp_parsling)
+
+        [ check for error ]
+        scourge.jump.bottom(workspace:error:occured, @scourge.master_scope)()
+
+        [ setup object name ]
+        scourge.copy(pushing_parsling:name)(temp_parsling:name)
+
+        [ append object ]
+        scourge.json.append.parsling(output:value.members, temp_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ detect number ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:integer, scourge.true)(workspace, recent_lexling, valid, invalid)
+    @found_new_number valid = {
+        [ setup data ]
+        scourge.pack(workspace:parsling.types:integer, name, recent_lexling, null_list)(pushing_parsling !scourge.json.parsling)
+
+        [ append object ]
+        scourge.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ detect string ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:string, scourge.true)(workspace, recent_lexling, valid, invalid)
+    @found_new_string valid = {
+        [ setup data ]
+        scourge.pack(workspace:parsling.types:string, name, recent_lexling, null_list)(pushing_parsling !scourge.json.parsling)
+
+        [ append object ]
+        scourge.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ detect boolean true ]
+    scourge.json.compile.parse.check_current_lexling.by_value(workspace, string.true, scourge.true)(workspace, recent_lexling, valid, invalid)
+    @found_new_boolean_true valid = {
+        [ setup data ]
+        scourge.pack(workspace:parsling.types:boolean_true, name, recent_lexling, null_list)(pushing_parsling !scourge.json.parsling)
+
+        [ append object ]
+        scourge.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ detect boolean false ]
+    scourge.json.compile.parse.check_current_lexling.by_value(workspace, string.false, scourge.true)(workspace, recent_lexling, valid, invalid)
+    @found_new_boolean_false valid = {
+        [ setup data ]
+        scourge.pack(workspace:parsling.types:boolean_false, name, recent_lexling, null_list)(pushing_parsling !scourge.json.parsling)
+
+        [ append object ]
+        scourge.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ detect null data ]
+    scourge.json.compile.parse.check_current_lexling.by_value(workspace, string.null, scourge.true)(workspace, recent_lexling, valid, invalid)
+    @found_new_null valid = {
+        [ setup data ]
+        scourge.pack(workspace:parsling.types:null, name, recent_lexling, null_list)(pushing_parsling !scourge.json.parsling)
+
+        [ append object ]
+        scourge.json.append.parsling(output:value.members, pushing_parsling)(output:value.members)
+
+        [ next iteration ]
+        scourge.jump(scourge.always, @check_for_members.loop_start)()
+    }
+
+    [ invalid value lexling ]
+    [ raise error ]
+    scourge.set("Parsing Error: When breaking down a json array, an unusable lexling was found.")(error_message)
+    scourge.json.compile.raise_error(workspace, error_message)(workspace)
+
+    [ exit function ]
+    scourge.jump.bottom(scourge.always, @scourge.master_scope)()
+
+    [ exit loop ]
+    @check_for_members.loop_exit
+
+    [ skip past closer ]
+    scourge.json.compile.parse.check_current_lexling.by_type(workspace, workspace:lexling.types:right_square_bracket, scourge.true)(workspace, recent_lexling, valid, invalid)
+}
+
+[ check lexling ]
+scourge.json.compile.parse.check_current_lexling.by_type(workspace !scourge.json.workspace, expected_type !scourge.cell, advance !scourge.cell)(workspace !scourge.json.workspace, lexling !scourge.json.lexling, valid !scourge.cell, invalid !scourge.cell) = {
+    [ check valid lexling ]
+    scourge.json.compile.parse.retrieve_lexling(workspace)(workspace, lexling, valid, invalid)
+    scourge.jump.bottom(invalid, @scourge.master_scope)()
+
+    [ check for lexling type ]
+    scourge.integer.within_range(expected_type, lexling:type, expected_type)(valid, invalid)
+    scourge.jump.bottom(invalid, @scourge.master_scope)()
+
+    [ advance ]
+    scourge.json.compile.parse.advance_lexling_current(workspace, advance, scourge.constant.1)(workspace)
+}
+
+[ check lexling ]
+scourge.json.compile.parse.check_current_lexling.by_value(workspace !scourge.json.workspace, value !scourge.buffer, advance !scourge.cell)(workspace !scourge.json.workspace, lexling !scourge.json.lexling, valid !scourge.cell, invalid !scourge.cell) = {
+    [ check valid lexling ]
+    scourge.json.compile.parse.retrieve_lexling(workspace)(workspace, lexling, valid, invalid)
+    scourge.jump.bottom(invalid, @scourge.master_scope)()
+
+    [ check for lexling name ]
+    scourge.check.buffer_contents_are_equal(lexling:raw, value)(valid, invalid)
+    scourge.jump.bottom(invalid, @scourge.master_scope)()
+
+    [ advance ]
+    scourge.json.compile.parse.advance_lexling_current(workspace, advance, scourge.constant.1)(workspace)
+}
+
+[ advance lexling ]
+scourge.json.compile.parse.advance_lexling_current(workspace !scourge.json.workspace, advance !scourge.cell, change_by_n_lexlings !scourge.cell)(workspace !scourge.json.workspace) = {
+    [ if advanceable ]
+    @advance advance = {
+        [ calculate step ]
+        scourge.pack.null()(dummy !scourge.json.lexling)
+        scourge.structure.byte_size(dummy)(lexling.size)
+        scourge.integer.multiply(lexling.size, change_by_n_lexlings)(new_progress)
+
+        [ perform step ]
+        scourge.integer.add(workspace:current_lexling:progress, new_progress)(workspace:current_lexling:progress)
+    }
+}
+
+[ check valid lexling location and retrieve if possible ]
+scourge.json.compile.parse.retrieve_lexling(workspace !scourge.json.workspace)(workspace !scourge.json.workspace, lexling !scourge.json.lexling, valid !scourge.cell, invalid !scourge.cell) = {
+    [ check for valid lexling range ]
+    scourge.current.within_range(workspace:current_lexling)(within_range, out_of_range)
+    @out_of_range out_of_range = {
+        [ set validity ]
+        scourge.copy(scourge.false)(valid)
+        scourge.copy(scourge.true)(invalid)
+
+        [ exit function ]
+        scourge.jump.bottom(scourge.always, @scourge.master_scope)()
+    }
+
+    [ setup lexling read buffer ]
+    scourge.pack.null()(dummy !scourge.json.lexling)
+    scourge.structure.byte_size(dummy)(lexling.byte_size)
+    scourge.buffer.calculate.end_address(workspace:current_lexling:progress, lexling.byte_size)(lexling.end)
+    scourge.pack(workspace:current_lexling:progress, lexling.end)(lexling.source !scourge.buffer)
+
+    [ get lexling ]
+    scourge.buffer_to_structure(lexling.source)(lexling !scourge.json.lexling)
+
+    [ set validity to true (as far as the lexling location goes) ]
+    scourge.copy(scourge.true)(valid)
+    scourge.copy(scourge.false)(invalid)
+}
+
+[ print json parslings ]
+scourge.json.compile.print.parslings(workspace !scourge.json.workspace)() = {
+    [ print parslings ]
+    scourge.json.compile.print.parsling(workspace, workspace:parslings:root, scourge.constant.0)()
+}
+
+[ print json parsling object ]
+scourge.json.compile.print.parsling(workspace !scourge.json.workspace, parsling !scourge.json.parsling, tabs !scourge.cell)() = {
+    [ predefine variables ]
+    scourge.pack.null()(temp_parsling !scourge.json.parsling)
+    scourge.structure.byte_size(temp_parsling !scourge.json.parsling)(parsling.byte_size)
+
+    [ setup current ]
+    scourge.list.calculate.content_buffer(parsling:value.members)(members_content_buffer)
+    scourge.pack(members_content_buffer, members_content_buffer:start)(members_content_buffer.current !scourge.current)
+
+    [ print tabs ]
+    scourge.print.tabs(tabs)()
+
+    [ print name if has name ]
+    scourge.integer.within_range(scourge.constant.0, parsling:name:raw:start, scourge.constant.0)(has_no_name, has_a_name)
+    @has_a_name has_a_name = {
+        [ print name ]
+        scourge.print.buffer_as_string(parsling:name:raw)()
+    }
+    @has_no_name has_no_name = {
+        [ print alias for no name ]
+        scourge.set("[no_name]")(message)
+        scourge.print.buffer_as_string(message)()
+    }
+
+    [ print separator ]
+    scourge.set(": ")(message)
+    scourge.print.buffer_as_string(message)()
+
+    [ determine type ]
+    scourge.integer.within_range(workspace:parsling.types:invalid, parsling:type, workspace:parsling.types:invalid)(is_invalid, not)
+    scourge.integer.within_range(workspace:parsling.types:object, parsling:type, workspace:parsling.types:object)(is_object, not)
+    scourge.integer.within_range(workspace:parsling.types:array, parsling:type, workspace:parsling.types:array)(is_array, not)
+    scourge.integer.within_range(workspace:parsling.types:string, parsling:type, workspace:parsling.types:null)(is_literal, not)
+
+    [ print invalid ]
+    @is_invalid is_invalid = {
+        [ print message ]
+        scourge.set("[invalid]")(message)
+        scourge.print.buffer_as_string(message)()
+        scourge.print.new_line()()
+    }
+
+    [ print object ]
+    @is_object is_object = {
+        [ print new line ]
+        scourge.print.new_line()()
+
+        [ setup loop start ]
+        @is_object.loop_members scourge.always = {
+            [ check current within range ]
+            scourge.current.within_range(members_content_buffer.current)(within_range, out_of_range)
+            scourge.jump.bottom(out_of_range, @is_object.loop_members)()
+
+            [ get parsling ]
+            scourge.buffer.calculate.end_address(members_content_buffer.current:progress, parsling.byte_size)(parsling.end)
+            scourge.pack(members_content_buffer.current:progress, parsling.end)(temp_parsling.source !scourge.buffer)
+            scourge.buffer_to_structure(temp_parsling.source)(temp_parsling !scourge.json.parsling)
+
+            [ call print of parsling ]
+            scourge.integer.add(tabs, scourge.constant.1)(sub_tabs)
+            scourge.json.compile.print.parsling(workspace, temp_parsling, sub_tabs)()
+
+            [ next member ]
+            scourge.integer.add(members_content_buffer.current:progress, parsling.byte_size)(members_content_buffer.current:progress)
+
+            [ jump to loop start ]
+            scourge.jump.top(scourge.always, @is_object.loop_members)()
+        }
+    }
+
+    [ print array ]
+    @is_array is_array = {
+        [ print new line ]
+        scourge.print.new_line()()
+
+        [ setup loop start ]
+        @is_array.loop_members scourge.always = {
+            [ check current within range ]
+            scourge.current.within_range(members_content_buffer.current)(within_range, out_of_range)
+            scourge.jump.bottom(out_of_range, @is_array.loop_members)()
+
+            [ get parsling ]
+            scourge.buffer.calculate.end_address(members_content_buffer.current:progress, parsling.byte_size)(parsling.end)
+            scourge.pack(members_content_buffer.current:progress, parsling.end)(temp_parsling.source !scourge.buffer)
+            scourge.buffer_to_structure(temp_parsling.source)(temp_parsling !scourge.json.parsling)
+
+            [ call print of parsling ]
+            scourge.integer.add(tabs, scourge.constant.1)(sub_tabs)
+            scourge.json.compile.print.parsling(workspace, temp_parsling, sub_tabs)()
+
+            [ next member ]
+            scourge.integer.add(members_content_buffer.current:progress, parsling.byte_size)(members_content_buffer.current:progress)
+
+            [ jump to loop start ]
+            scourge.jump.top(scourge.always, @is_array.loop_members)()
+        }
+    }
+
+    [ print raw ]
+    @is_literal is_literal = {
+        [ print value ]
+        scourge.print.buffer_as_string(parsling:value.datum:raw)()
+
+        [ next line ]
+        scourge.print.new_line()()
+    }
+}
+
+
+
+[
+    Traversing
+]
+[ traverse based on name ]
+scourge.json.traverse.retrieve_parsling.by_name(source_parsling !scourge.json.parsling, name !scourge.buffer)(found_parsling !scourge.json.parsling, was_found !scourge.cell, was_not_found !scourge.cell) = {
+    [ null init output ]
+    scourge.pack.null()(found_parsling !scourge.json.parsling)
+
+    [ setup metadata ]
+    scourge.structure.byte_size(source_parsling)(parsling.byte_size)
+
+    [ setup buffer ]
+    scourge.list.calculate.content_buffer(source_parsling:value.members)(members_buffer)
+
+    [ setup current ]
+    scourge.pack(members_buffer, members_buffer:start)(current_member !scourge.current)
+
+    [ setup search condition ]
+    scourge.copy(scourge.true)(not_found)
+
+    [ search for member with name ]
+    @search not_found = {
+        [ check for current within range ]
+        scourge.current.within_range(current_member)(more_parslings, no_more_parslings)
+        scourge.jump.bottom(no_more_parslings, @search)()
+
+        [ setup parsling read buffer ]
+        scourge.pack.null()(dummy !scourge.json.parsling)
+        scourge.structure.byte_size(dummy)(parsling.byte_size)
+        scourge.buffer.calculate.end_address(current_member:progress, parsling.byte_size)(parsling.end)
+        scourge.pack(current_member:progress, parsling.end)(parsling.source !scourge.buffer)
+
+        [ get parsling ]
+        scourge.buffer_to_structure(parsling.source)(parsling !scourge.json.parsling)
+
+        [ get name ]
+        scourge.json.compile.get_name_from_lexling(parsling:name)(parsling_name)
+
+        [ check name ]
+        scourge.check.buffer_contents_are_equal(name, parsling_name)(found_name, did_not_find_name)
+
+        [ if name was matched ]
+        @match found_name = {
+            [ disable not found ]
+            scourge.copy(scourge.false)(not_found)
+
+            [ setup output ]
+            scourge.copy(parsling)(found_parsling)
+
+            [ return ]
+            scourge.jump.bottom(scourge.always, @search)()
+        }
+
+        [ advance current ]
+        scourge.integer.add(current_member:progress, parsling.byte_size)(current_member:progress)
+
+        [ next parsling ]
+        scourge.jump.top(scourge.always, @search)()
+    }
+}
+
+[ traverse based on index ]
+scourge.json.traverse.retrieve_parsling.by_index(source_parsling !scourge.json.parsling, index !scourge.cell)(found_parsling !scourge.json.parsling, valid_index !scourge.cell, invalid_index !scourge.cell) = {
+    [ init outputs ]
+    scourge.pack.null()(found_parsling !scourge.json.parsling)
+
+    [ calculate list metadata ]
+    scourge.json.traverse.calculate.parsling_list_metadata(source_parsling)(parsling_members_current, parsling_byte_size, member_count)
+
+    [ check if the index is valid ]
+    [ if member count is zero ]
+    scourge.integer.within_range(scourge.constant.0, member_count, scourge.constant.0)(invalid_index, valid_index)
+    scourge.jump.bottom(invalid_index, @scourge.master_scope)()
+
+    [ check member index ]
+    scourge.integer.subtract(member_count, scourge.constant.1)(max_member_index)
+    scourge.integer.within_range(scourge.constant.0, index, max_member_index)(valid_index, invalid_index)
+
+    [ if valid index ]
+    @valid_index valid_index = {
+        [ calculate structure ]
+        scourge.integer.multiply(index, parsling_byte_size)(member_offset)
+        scourge.integer.add(member_offset, parsling_members_current:buffer:start)(parsling.start)
+        scourge.buffer.calculate.end_address(parsling.start, parsling_byte_size)(parsling.end)
+        scourge.pack(parsling.start, parsling.end)(parsling.buffer !scourge.buffer)
+
+        [ setup structure ]
+        scourge.buffer_to_structure(parsling.buffer)(found_parsling !scourge.json.parsling)
+
+        [ setup other outputs ]
+        scourge.copy(scourge.false)(invalid_index)
+    }
+}
+
+[ calculate length ]
+scourge.json.traverse.calculate.parsling_list_metadata(parsling !scourge.json.parsling)(current !scourge.current, parsling_byte_size !scourge.cell, parsling_count !scourge.cell) = {
+    [ setup metadata ]
+    scourge.structure.byte_size(parsling)(parsling_byte_size)
+
+    [ calculate content length, content buffer and member count ]
+    scourge.list.calculate.content_buffer(parsling:value.members)(content)
+    scourge.pack(content, content:start)(current !scourge.current)
+    scourge.buffer.calculate.length(content)(content.byte_length)
+    scourge.integer.divide(content.byte_length, parsling_byte_size)(parsling_count)
+}
+
+[ return lexling string without surrounding double quotes ]
+scourge.json.compile.get_name_from_lexling(source_lexling !scourge.json.lexling)(name !scourge.buffer) = {
+    [ copy string ]
+    scourge.copy(source_lexling:raw)(name)
+
+    [ clip quotes ]
+    scourge.integer.add(name:start, scourge.ascii_character.byte_size)(name:start)
+    scourge.integer.subtract(name:end, scourge.ascii_character.byte_size)(name:end)
+}
+
+
+
+[
+    Stringify
+]
+[ stringify json parslings ]
+scourge.json.stringify.parslings(workspace !scourge.json.workspace)(string !scourge.buffer) = {
+    [ setup list ]
+    [ scourge.set(scourge.integer.1048576)(increase) ]
+    scourge.set(scourge.integer.100)(increase)
+    scourge.list.open(increase)(list)
+
+    [ stringify parslings ]
+    scourge.json.stringify.parsling(workspace, workspace:parslings:root, list, scourge.constant.0)(list)
+
+    [ turn string list into buffer ]
+    scourge.list.duplicate_content(list)(string)
+
+    [ deallocate original list ]
+    scourge.list.close(list)()
+}
+
+[ stringify json parsling object ]
+scourge.json.stringify.parsling(workspace !scourge.json.workspace, parsling !scourge.json.parsling, string !scourge.list, tabs !scourge.cell)(string !scourge.list) = {
+    [ predefine variables ]
+    scourge.pack.null()(temp_parsling !scourge.json.parsling)
+    scourge.structure.byte_size(temp_parsling !scourge.json.parsling)(parsling.byte_size)
+    scourge.set("{")(left_curly_bracket)
+    scourge.set("}")(right_curly_bracket)
+    scourge.set("[")(left_square_bracket)
+    scourge.set("]")(right_square_bracket)
+    scourge.set(": ")(separator)
+    scourge.set(",")(comma)
+
+    [ setup current ]
+    scourge.list.calculate.content_buffer(parsling:value.members)(members_content_buffer)
+    scourge.pack(members_content_buffer, members_content_buffer:start)(members_content_buffer.current !scourge.current)
+
+    [ print tabs ]
+    scourge.list.append.tabs(string, tabs)(string)
+
+    [ print name if has name ]
+    scourge.integer.within_range(scourge.constant.0, parsling:name:raw:start, scourge.constant.0)(has_no_name, has_a_name)
+    @has_a_name has_a_name = {
+        [ append name ]
+        scourge.list.append.buffer_data(string, parsling:name:raw)(string)
+
+        [ print separator ]
+        scourge.list.append.buffer_data(string, separator)(string)
+    }
+
+    [ determine type ]
+    scourge.integer.within_range(workspace:parsling.types:invalid, parsling:type, workspace:parsling.types:invalid)(is_invalid, not)
+    scourge.integer.within_range(workspace:parsling.types:object, parsling:type, workspace:parsling.types:object)(is_object, not)
+    scourge.integer.within_range(workspace:parsling.types:array, parsling:type, workspace:parsling.types:array)(is_array, not)
+    scourge.integer.within_range(workspace:parsling.types:string, parsling:type, workspace:parsling.types:null)(is_literal, not)
+
+    [ print invalid ]
+    @is_invalid is_invalid = {
+        [ print message ]
+        scourge.set("[invalid]")(message)
+        scourge.list.append.buffer_data(string, message)(string)
+        scourge.list.append.new_line(string)(string)
+    }
+
+    [ print object ]
+    @is_object is_object = {
+        [ append opener ]
+        scourge.list.append.buffer_data(string, left_curly_bracket)(string)
+
+        [ append new line ]
+        scourge.list.append.new_line(string)(string)
+
+        [ setup member count ]
+        scourge.copy(scourge.constant.0)(member_index)
+
+        [ setup loop start ]
+        @is_object.loop_members scourge.always = {
+            [ check current within range ]
+            scourge.current.within_range(members_content_buffer.current)(within_range, out_of_range)
+            scourge.jump.bottom(out_of_range, @is_object.loop_members)()
+
+            [ get parsling ]
+            scourge.buffer.calculate.end_address(members_content_buffer.current:progress, parsling.byte_size)(parsling.end)
+            scourge.pack(members_content_buffer.current:progress, parsling.end)(temp_parsling.source !scourge.buffer)
+            scourge.buffer_to_structure(temp_parsling.source)(temp_parsling !scourge.json.parsling)
+
+            [ call print of parsling ]
+            scourge.integer.add(tabs, scourge.constant.1)(sub_tabs)
+            scourge.json.stringify.parsling(workspace, temp_parsling, string, sub_tabs)(string)
+
+            [ check for comma ]
+            scourge.json.calculate.comma_required(parsling, member_index)(comma_required, comma_not_required)
+            @comma_required.object comma_required = {
+                scourge.list.append.buffer_data(string, comma)(string)
+            }
+
+            [ new line ]
+            scourge.list.append.new_line(string)(string)
+
+            [ next member ]
+            scourge.integer.add(members_content_buffer.current:progress, parsling.byte_size)(members_content_buffer.current:progress)
+            scourge.integer.add(member_index, scourge.constant.1)(member_index)
+
+            [ jump to loop start ]
+            scourge.jump.top(scourge.always, @is_object.loop_members)()
+        }
+
+        [ append closer ]
+        scourge.list.append.tabs(string, tabs)(string)
+        scourge.list.append.buffer_data(string, right_curly_bracket)(string)
+    }
+
+    [ print array ]
+    @is_array is_array = {
+        [ append opener ]
+        scourge.list.append.buffer_data(string, left_square_bracket)(string)
+
+        [ print new line ]
+        scourge.list.append.new_line(string)(string)
+
+        [ setup loop start ]
+        @is_array.loop_members scourge.always = {
+            [ check current within range ]
+            scourge.current.within_range(members_content_buffer.current)(within_range, out_of_range)
+            scourge.jump.bottom(out_of_range, @is_array.loop_members)()
+
+            [ get parsling ]
+            scourge.buffer.calculate.end_address(members_content_buffer.current:progress, parsling.byte_size)(parsling.end)
+            scourge.pack(members_content_buffer.current:progress, parsling.end)(temp_parsling.source !scourge.buffer)
+            scourge.buffer_to_structure(temp_parsling.source)(temp_parsling !scourge.json.parsling)
+
+            [ call print of parsling ]
+            scourge.integer.add(tabs, scourge.constant.1)(sub_tabs)
+            scourge.json.stringify.parsling(workspace, temp_parsling, string, sub_tabs)(string)
+
+            [ check for comma ]
+            scourge.json.calculate.comma_required(parsling, member_index)(comma_required, comma_not_required)
+            @comma_required.array comma_required = {
+                scourge.list.append.buffer_data(string, comma)(string)
+            }
+
+            [ new line ]
+            scourge.list.append.new_line(string)(string)
+
+            [ next member ]
+            scourge.integer.add(members_content_buffer.current:progress, parsling.byte_size)(members_content_buffer.current:progress)
+            scourge.integer.add(member_index, scourge.constant.1)(member_index)
+
+            [ jump to loop start ]
+            scourge.jump.top(scourge.always, @is_array.loop_members)()
+        }
+
+        [ append closer ]
+        scourge.list.append.tabs(string, tabs)(string)
+        scourge.list.append.buffer_data(string, right_square_bracket)(string)
+    }
+
+    [ print raw ]
+    @is_literal is_literal = {
+        [ print value ]
+        scourge.list.append.buffer_data(string, parsling:value.datum:raw)(string)
+    }
+}
+
+[ check if a comma is required ]
+scourge.json.calculate.comma_required(parsling !scourge.json.parsling, index !scourge.cell)(comma_required !scourge.cell, comma_not_required !scourge.cell) = {
+    [ calculate max count ]
+    scourge.json.calculate.parsling_count_in_list(parsling)(count)
+    scourge.integer.subtract(count, scourge.constant.1)(max_index)
+
+    [ calculate if is last comma ]
+    scourge.integer.within_range(max_index, index, max_index)(comma_not_required, comma_required)
+}
+
+[ calculate parsling member count ]
+scourge.json.calculate.parsling_count_in_list(parsling !scourge.json.parsling)(count !scourge.cell) = {
+    [ calculate parsling size ]
+    scourge.structure.byte_size(parsling)(size)
+
+    [ get content buffer length ]
+    scourge.list.calculate.content_buffer(parsling:value.members)(content)
+    scourge.buffer.calculate.length(content)(length)
+
+    [ calculate count ]
+    scourge.integer.divide(length, size)(count)
+}

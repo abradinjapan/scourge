@@ -1,0 +1,471 @@
+[
+    Anvil:
+    - A library for writing anvil instructions and general data.
+]
+
+[
+    Workspace
+    - The part that does the binary writing.
+]
+
+[ create a workspace ]
+!scourge.anvil.workspace
+(
+    do_write !scourge.cell,
+    write_to !scourge.cell,
+    length !scourge.cell,
+    program !scourge.buffer
+)
+
+[ open a workspace ]
+scourge.anvil.workspace.open()(workspace !scourge.anvil.workspace) = {
+    scourge.pack.null()(workspace !scourge.anvil.workspace)
+}
+
+[ advance workspace ]
+scourge.anvil.workspace.setup_pass(workspace !scourge.anvil.workspace, do_write !scourge.cell)(workspace !scourge.anvil.workspace) = {
+    [ setup do_write ]
+    scourge.copy(do_write)(workspace:do_write)
+
+    [ determine pass type ]
+    scourge.integer.within_range(scourge.false, workspace:do_write, scourge.false)(measure_pass, not_measure_pass)
+    scourge.integer.within_range(scourge.true, workspace:do_write, scourge.true)(write_pass, not_write_pass)
+
+    [ if is starting a measure pass ]
+    @measure_pass measure_pass = {
+        [ setup length ]
+        scourge.copy(scourge.constant.0)(workspace:length)
+    }
+
+    [ if is starting a write pass ]
+    @write_pass write_pass = {
+        [ allocate buffer based on length ]
+        scourge.buffer.request(workspace:length)(workspace:program)
+
+        [ setup write to ]
+        scourge.copy(workspace:program:start)(workspace:write_to)
+
+        [ reset length ]
+        scourge.copy(scourge.constant.0)(workspace:length)
+    }
+}
+
+[ write cell data to workspace ]
+scourge.anvil.workspace.write.cell(workspace !scourge.anvil.workspace, data !scourge.cell, count !scourge.cell)(workspace !scourge.anvil.workspace) = {
+    [ if is write pass, do write and advancement ]
+    @do_write workspace:do_write = {
+        [ write data & advance ]
+        scourge.cell_to_address(data, count, workspace:write_to)(workspace:write_to)
+    }
+
+    [ advance length ]
+    scourge.integer.add(workspace:length, count)(workspace:length)
+}
+
+[ write buffer to workspace ]
+scourge.anvil.workspace.write.buffer(workspace !scourge.anvil.workspace, data !scourge.buffer)(workspace !scourge.anvil.workspace) = {
+    [ calculate buffer length ]
+    scourge.buffer.calculate.length(data)(data.length)
+
+    [ if is write pass, do write and advancement ]
+    @do_write workspace:do_write = {
+        [ calculate destination buffer ]
+        scourge.buffer.calculate.end_address(workspace:write_to, data.length)(destination.end)
+        scourge.pack(workspace:write_to, destination.end)(destination !scourge.buffer)
+
+        [ write data ]
+        scourge.buffer.copy.low_to_high(data, destination)()
+
+        [ advance current ]
+        scourge.integer.add(workspace:write_to, data.length)(workspace:write_to)
+    }
+
+    [ advance length ]
+    scourge.integer.add(workspace:length, data.length)(workspace:length)
+}
+
+[
+    Anvil Defines
+]
+[ define byte sizes ]
+scourge.anvil.define.byte_size.instruction_ID()(byte_size !scourge.cell) = { scourge.set(scourge.integer.1)(byte_size) }
+scourge.anvil.define.byte_size.flag_ID()(byte_size !scourge.cell) = { scourge.set(scourge.integer.1)(byte_size) }
+scourge.anvil.define.byte_size.operation_ID()(byte_size !scourge.cell) = { scourge.set(scourge.integer.1)(byte_size) }
+scourge.anvil.define.byte_size.cell_ID()(byte_size !scourge.cell) = { scourge.set(scourge.integer.2)(byte_size) }
+scourge.anvil.define.byte_size.cell()(byte_size !scourge.cell) = { scourge.copy(scourge.cell.byte_size)(byte_size) }
+
+[ define instruction IDs ]
+scourge.anvil.define.instruction_ID.stop()(ID !scourge.cell) = { scourge.set(scourge.integer.0)(ID) }
+scourge.anvil.define.instruction_ID.write_cell()(ID !scourge.cell) = { scourge.set(scourge.integer.1)(ID) }
+scourge.anvil.define.instruction_ID.operate()(ID !scourge.cell) = { scourge.set(scourge.integer.2)(ID) }
+scourge.anvil.define.instruction_ID.request_memory()(ID !scourge.cell) = { scourge.set(scourge.integer.3)(ID) }
+scourge.anvil.define.instruction_ID.return_memory()(ID !scourge.cell) = { scourge.set(scourge.integer.4)(ID) }
+scourge.anvil.define.instruction_ID.address_to_cell()(ID !scourge.cell) = { scourge.set(scourge.integer.5)(ID) }
+scourge.anvil.define.instruction_ID.cell_to_address()(ID !scourge.cell) = { scourge.set(scourge.integer.6)(ID) }
+scourge.anvil.define.instruction_ID.file_to_buffer()(ID !scourge.cell) = { scourge.set(scourge.integer.7)(ID) }
+scourge.anvil.define.instruction_ID.buffer_to_file()(ID !scourge.cell) = { scourge.set(scourge.integer.8)(ID) }
+scourge.anvil.define.instruction_ID.delete_file()(ID !scourge.cell) = { scourge.set(scourge.integer.9)(ID) }
+scourge.anvil.define.instruction_ID.buffer_to_buffer.low_to_high()(ID !scourge.cell) = { scourge.set(scourge.integer.10)(ID) }
+scourge.anvil.define.instruction_ID.buffer_to_buffer.high_to_low()(ID !scourge.cell) = { scourge.set(scourge.integer.11)(ID) }
+scourge.anvil.define.instruction_ID.compile()(ID !scourge.cell) = { scourge.set(scourge.integer.12)(ID) }
+scourge.anvil.define.instruction_ID.run()(ID !scourge.cell) = { scourge.set(scourge.integer.13)(ID) }
+scourge.anvil.define.instruction_ID.get_time()(ID !scourge.cell) = { scourge.set(scourge.integer.14)(ID) }
+scourge.anvil.define.instruction_ID.debug.putchar()(ID !scourge.cell) = { scourge.set(scourge.integer.15)(ID) }
+scourge.anvil.define.instruction_ID.debug.fgets()(ID !scourge.cell) = { scourge.set(scourge.integer.16)(ID) }
+scourge.anvil.define.instruction_ID.debug.mark_data_section()(ID !scourge.cell) = { scourge.set(scourge.integer.17)(ID) }
+scourge.anvil.define.instruction_ID.debug.mark_code_section()(ID !scourge.cell) = { scourge.set(scourge.integer.18)(ID) }
+scourge.anvil.define.instruction_ID.debug.get_current_context()(ID !scourge.cell) = { scourge.set(scourge.integer.19)(ID) }
+scourge.anvil.define.instruction_ID.debug.search_for_allocation()(ID !scourge.cell) = { scourge.set(scourge.integer.20)(ID) }
+
+[ define operation IDs ]
+scourge.anvil.define.operation_ID.cell_to_cell()(ID !scourge.cell) = { scourge.set(scourge.integer.0)(ID) }
+scourge.anvil.define.operation_ID.bits_or()(ID !scourge.cell) = { scourge.set(scourge.integer.1)(ID) }
+scourge.anvil.define.operation_ID.bits_invert()(ID !scourge.cell) = { scourge.set(scourge.integer.2)(ID) }
+scourge.anvil.define.operation_ID.bits_and()(ID !scourge.cell) = { scourge.set(scourge.integer.3)(ID) }
+scourge.anvil.define.operation_ID.bits_xor()(ID !scourge.cell) = { scourge.set(scourge.integer.4)(ID) }
+scourge.anvil.define.operation_ID.bits_shift_higher()(ID !scourge.cell) = { scourge.set(scourge.integer.5)(ID) }
+scourge.anvil.define.operation_ID.bits_shift_lower()(ID !scourge.cell) = { scourge.set(scourge.integer.6)(ID) }
+scourge.anvil.define.operation_ID.bits_overwrite()(ID !scourge.cell) = { scourge.set(scourge.integer.7)(ID) }
+scourge.anvil.define.operation_ID.integer_add()(ID !scourge.cell) = { scourge.set(scourge.integer.8)(ID) }
+scourge.anvil.define.operation_ID.integer_subtract()(ID !scourge.cell) = { scourge.set(scourge.integer.9)(ID) }
+scourge.anvil.define.operation_ID.integer_multiply()(ID !scourge.cell) = { scourge.set(scourge.integer.10)(ID) }
+scourge.anvil.define.operation_ID.integer_division()(ID !scourge.cell) = { scourge.set(scourge.integer.11)(ID) }
+scourge.anvil.define.operation_ID.integer_modulous()(ID !scourge.cell) = { scourge.set(scourge.integer.12)(ID) }
+scourge.anvil.define.operation_ID.integer_within_range()(ID !scourge.cell) = { scourge.set(scourge.integer.13)(ID) }
+scourge.anvil.define.operation_ID.flag_or()(ID !scourge.cell) = { scourge.set(scourge.integer.14)(ID) }
+scourge.anvil.define.operation_ID.flag_invert()(ID !scourge.cell) = { scourge.set(scourge.integer.15)(ID) }
+scourge.anvil.define.operation_ID.flag_and()(ID !scourge.cell) = { scourge.set(scourge.integer.16)(ID) }
+scourge.anvil.define.operation_ID.flag_xor()(ID !scourge.cell) = { scourge.set(scourge.integer.17)(ID) }
+scourge.anvil.define.operation_ID.flag_get()(ID !scourge.cell) = { scourge.set(scourge.integer.18)(ID) }
+scourge.anvil.define.operation_ID.flag_set()(ID !scourge.cell) = { scourge.set(scourge.integer.19)(ID) }
+
+[
+    Scraplets
+]
+[ write instruction ID scraplet ]
+scourge.anvil.write.scraplet.instruction_ID(workspace !scourge.anvil.workspace, instruction_ID !scourge.cell #scourge.anvil.instruction_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.byte_size.instruction_ID()(byte_size)
+    
+    [ write instruction ID ]
+    scourge.anvil.workspace.write.cell(workspace, instruction_ID, byte_size)(workspace)
+}
+
+[ write flag ID scraplet ]
+scourge.anvil.write.scraplet.flag_ID(workspace !scourge.anvil.workspace, flag_ID !scourge.cell #scourge.anvil.flag_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.byte_size.flag_ID()(byte_size)
+
+    [ write instruction ID ]
+    scourge.anvil.workspace.write.cell(workspace, flag_ID, byte_size)(workspace)
+}
+
+[ write operation ID scraplet ]
+scourge.anvil.write.scraplet.operation_ID(workspace !scourge.anvil.workspace, operation_ID !scourge.cell #scourge.anvil.operation_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.byte_size.operation_ID()(byte_size)
+
+    [ write instruction ID ]
+    scourge.anvil.workspace.write.cell(workspace, operation_ID, byte_size)(workspace)
+}
+
+[ write cell ID scraplet ]
+scourge.anvil.write.scraplet.cell_ID(workspace !scourge.anvil.workspace, cell_ID !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.byte_size.cell_ID()(byte_size)
+
+    [ write instruction ID ]
+    scourge.anvil.workspace.write.cell(workspace, cell_ID, byte_size)(workspace)
+}
+
+[ write cell scraplet ]
+scourge.anvil.write.scraplet.cell(workspace !scourge.anvil.workspace, cell !scourge.cell #scourge.anvil.cell)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.byte_size.cell()(byte_size)
+
+    [ write instruction ID ]
+    scourge.anvil.workspace.write.cell(workspace, cell, byte_size)(workspace)
+}
+
+[
+    Instructions
+]
+[ write stop instruction ]
+scourge.anvil.write.instruction.stop(workspace !scourge.anvil.workspace)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.stop()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+}
+
+[ write write_cell instruction ]
+scourge.anvil.write.instruction.write_cell(workspace !scourge.anvil.workspace, value !scourge.cell #scourge.anvil.cell, destination_cell_ID !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.write_cell()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell(workspace, value)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, destination_cell_ID)(workspace)
+}
+
+[ write operate instruction ]
+scourge.anvil.write.instruction.operate(workspace !scourge.anvil.workspace, flag_ID !scourge.cell #scourge.anvil.flag_ID, operation_ID !scourge.cell #scourge.anvil.operation_ID, input_0 !scourge.cell #scourge.anvil.cell_ID, input_1 !scourge.cell #scourge.anvil.cell_ID, input_2 !scourge.cell #scourge.anvil.cell_ID, output_0 !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.operate()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.flag_ID(workspace, flag_ID)(workspace)
+    scourge.anvil.write.scraplet.operation_ID(workspace, operation_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, input_0)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, input_1)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, input_2)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, output_0)(workspace)
+}
+
+[ write request memory instruction ]
+scourge.anvil.write.instruction.request_memory(workspace !scourge.anvil.workspace, allocation_size !scourge.cell #scourge.anvil.cell_ID, allocation_start !scourge.cell #scourge.anvil.cell_ID, allocation_end !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.request_memory()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, allocation_size)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, allocation_start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, allocation_end)(workspace)
+}
+
+[ write return memory instruction ]
+scourge.anvil.write.instruction.return_memory(workspace !scourge.anvil.workspace, allocation_start !scourge.cell #scourge.anvil.cell_ID, allocation_end !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.return_memory()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, allocation_start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, allocation_end)(workspace)
+}
+
+[ write address to cell instruction ]
+scourge.anvil.write.instruction.address_to_cell(workspace !scourge.anvil.workspace, flag_ID !scourge.cell #scourge.anvil.flag_ID, source_address !scourge.cell #scourge.anvil.cell_ID, byte_size !scourge.cell #scourge.anvil.cell_ID, destination_cell !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.address_to_cell()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.flag_ID(workspace, flag_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, source_address)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, byte_size)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, destination_cell)(workspace)
+}
+
+[ write cell to address instruction ]
+scourge.anvil.write.instruction.cell_to_address(workspace !scourge.anvil.workspace, flag_ID !scourge.cell #scourge.anvil.flag_ID, source_cell !scourge.cell #scourge.anvil.cell_ID, byte_size !scourge.cell #scourge.anvil.cell_ID, destination_address !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.cell_to_address()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.flag_ID(workspace, flag_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, source_cell)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, byte_size)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, destination_address)(workspace)
+}
+
+[ write file to buffer instruction ]
+scourge.anvil.write.instruction.file_to_buffer(workspace !scourge.anvil.workspace, file_path.start !scourge.cell #scourge.anvil.cell_ID, file_path.end !scourge.cell #scourge.anvil.cell_ID, file_data.start !scourge.cell #scourge.anvil.cell_ID, file_data.end !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.file_to_buffer()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, file_path.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, file_path.end)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, file_data.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, file_data.end)(workspace)
+}
+
+[ write buffer to file instruction ]
+scourge.anvil.write.instruction.buffer_to_file(workspace !scourge.anvil.workspace, file_data.start !scourge.cell #scourge.anvil.cell_ID, file_data.end !scourge.cell #scourge.anvil.cell_ID, file_path.start !scourge.cell #scourge.anvil.cell_ID, file_path.end !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.buffer_to_file()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, file_data.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, file_data.end)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, file_path.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, file_path.end)(workspace)
+}
+
+[ write delete file instruction ]
+scourge.anvil.write.instruction.delete_file(workspace !scourge.anvil.workspace, file_path.start !scourge.cell #scourge.anvil.cell_ID, file_path.end !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.delete_file()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, file_path.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, file_path.end)(workspace)
+}
+
+[ write buffer to buffer low to high instruction ]
+scourge.anvil.write.instruction.buffer_to_buffer.low_to_high(workspace !scourge.anvil.workspace, source.start !scourge.cell #scourge.anvil.cell_ID, source.end !scourge.cell #scourge.anvil.cell_ID, destination.start !scourge.cell #scourge.anvil.cell_ID, destination.end !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.buffer_to_buffer.low_to_high()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, source.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, source.end)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, destination.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, destination.end)(workspace)
+}
+
+[ write buffer to buffer high to low instruction ]
+scourge.anvil.write.instruction.buffer_to_buffer.high_to_low(workspace !scourge.anvil.workspace, source.start !scourge.cell #scourge.anvil.cell_ID, source.end !scourge.cell #scourge.anvil.cell_ID, destination.start !scourge.cell #scourge.anvil.cell_ID, destination.end !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.buffer_to_buffer.high_to_low()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, source.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, source.end)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, destination.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, destination.end)(workspace)
+}
+
+[ write compile instruction ]
+scourge.anvil.write.instruction.compile(
+    workspace !scourge.anvil.workspace #scourge.anvil.cell_ID,
+    user_codes_buffers_buffer.start !scourge.cell #scourge.anvil.cell_ID,
+    user_codes_buffers_buffer.end !scourge.cell #scourge.anvil.cell_ID,
+    include_standard !scourge.cell #scourge.anvil.cell_ID,
+    debug_enabled !scourge.cell #scourge.anvil.cell_ID,
+    generate_kickstarter !scourge.cell #scourge.anvil.cell_ID,
+    output_program.start !scourge.cell #scourge.anvil.cell_ID,
+    output_program.end !scourge.cell #scourge.anvil.cell_ID,
+    output_debug.start !scourge.cell #scourge.anvil.cell_ID,
+    output_debug.end !scourge.cell #scourge.anvil.cell_ID,
+    error.error_occured !scourge.cell #scourge.anvil.cell_ID,
+    error.message.start !scourge.cell #scourge.anvil.cell_ID,
+    error.message.end !scourge.cell #scourge.anvil.cell_ID,
+    error.character_location.file_index !scourge.cell #scourge.anvil.cell_ID,
+    error.character_location.line_number !scourge.cell #scourge.anvil.cell_ID,
+    error.character_location.character_index !scourge.cell #scourge.anvil.cell_ID
+)
+(
+    workspace !scourge.anvil.workspace
+) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.compile()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, user_codes_buffers_buffer.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, user_codes_buffers_buffer.end)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, include_standard)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, debug_enabled)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, generate_kickstarter)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, output_program.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, output_program.end)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, output_debug.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, output_debug.end)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, error.error_occured)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, error.message.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, error.message.end)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, error.character_location.file_index)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, error.character_location.line_number)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, error.character_location.character_index)(workspace)
+}
+
+[ write run instruction ]
+scourge.anvil.write.instruction.run(workspace !scourge.anvil.workspace, context_buffer.start !scourge.cell #scourge.anvil.cell_ID, context_buffer.end !scourge.cell #scourge.anvil.cell_ID, instruction_count !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.run()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, context_buffer.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, context_buffer.end)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, instruction_count)(workspace)
+}
+
+[ write get time instruction ]
+scourge.anvil.write.instruction.get_time(workspace !scourge.anvil.workspace, seconds !scourge.cell #scourge.anvil.cell_ID, nanoseconds !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.get_time()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, seconds)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, nanoseconds)(workspace)
+}
+
+[ write debug putchar instruction ]
+scourge.anvil.write.instruction.debug.putchar(workspace !scourge.anvil.workspace, character_cell_ID !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.debug.putchar()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, character_cell_ID)(workspace)
+}
+
+[ write debug fgets instruction ]
+scourge.anvil.write.instruction.debug.fgets(workspace !scourge.anvil.workspace, input.start !scourge.cell #scourge.anvil.cell_ID, input.end !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.debug.fgets()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, input.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, input.end)(workspace)
+}
+
+[ write debug mark data section instruction ]
+scourge.anvil.write.instruction.debug.mark_data_section(workspace !scourge.anvil.workspace, section_length !scourge.cell #scourge.anvil.cell)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.debug.mark_data_section()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell(workspace, section_length)(workspace)
+}
+
+[ write debug mark code section instruction ]
+scourge.anvil.write.instruction.debug.mark_code_section(workspace !scourge.anvil.workspace, section_length !scourge.cell #scourge.anvil.cell)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.debug.mark_code_section()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, section_length)(workspace)
+}
+
+[ write debug get current context instruction ]
+scourge.anvil.write.instruction.debug.get_current_context(workspace !scourge.anvil.workspace, context.start !scourge.cell #scourge.anvil.cell_ID, context.end !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.debug.get_current_context()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, context.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, context.end)(workspace)
+}
+
+[ write debug search for allocation instruction ]
+scourge.anvil.write.instruction.debug.search_for_allocation(workspace !scourge.anvil.workspace, buffer_inside_allocation.start !scourge.cell #scourge.anvil.cell_ID, buffer_inside_allocation.end !scourge.cell #scourge.anvil.cell_ID, was_found !scourge.cell #scourge.anvil.cell_ID, found_buffer.start !scourge.cell #scourge.anvil.cell_ID, found_buffer.end !scourge.cell #scourge.anvil.cell_ID)(workspace !scourge.anvil.workspace) = {
+    [ setup variables ]
+    scourge.anvil.define.instruction_ID.debug.search_for_allocation()(instruction_ID)
+
+    [ write scraplets ]
+    scourge.anvil.write.scraplet.instruction_ID(workspace, instruction_ID)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, buffer_inside_allocation.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, buffer_inside_allocation.end)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, was_found)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, found_buffer.start)(workspace)
+    scourge.anvil.write.scraplet.cell_ID(workspace, found_buffer.end)(workspace)
+}

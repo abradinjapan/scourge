@@ -1,0 +1,150 @@
+[ print new line ]
+scourge.print.new_line()() = {
+    scourge.set(scourge.hexadecimal.0A)(new_line)
+    scourge.print.character(new_line)()
+}
+
+[ print new line(s) ]
+scourge.print.new_line(count !scourge.cell)() = {
+    [ check remaining iterations ]
+    scourge.integer.within_range(scourge.constant.0, count, scourge.constant.0)(quit, continue)
+    scourge.jump.bottom(quit, @scourge.master_scope)()
+
+    [ print ]
+    scourge.print.new_line()()
+
+    [ subtract ]
+    scourge.integer.subtract(count, scourge.constant.1)(count)
+
+    [ to top of loop ]
+    scourge.jump.top(scourge.always, @scourge.master_scope)()
+}
+
+[ print tabs ]
+scourge.print.tabs(tab_count !scourge.cell)() = {
+    [ set tab ]
+    scourge.set(scourge.hexadecimal.09)(tab)
+
+    [ print tabs until finished ]
+    @loop scourge.always = {
+        [ check for more characters ]
+        scourge.integer.within_range(scourge.constant.0, tab_count, scourge.constant.0)(finished, unfinished)
+        scourge.jump.bottom(finished, @loop)()
+
+        [ print tab ]
+        scourge.print.character(tab)()
+
+        [ next index ]
+        scourge.integer.subtract(tab_count, scourge.constant.1)(tab_count)
+
+        [ jump to loop start ]
+        scourge.jump.top(scourge.always, @loop)()
+    }
+}
+
+[ print a buffer as a set of two addresses ]
+scourge.print.buffer(buffer !scourge.buffer)() = {
+    [ setup strings ]
+    scourge.set("[ ")(header)
+    scourge.set(", ")(separator)
+    scourge.set(" ]")(footer)
+
+    [ print buffer ]
+    scourge.print.buffer_as_string(header)()
+    scourge.print.integer.unsigned(buffer:start)()
+    scourge.print.buffer_as_string(separator)()
+    scourge.print.integer.unsigned(buffer:end)()
+    scourge.print.buffer_as_string(footer)()
+}
+
+[ print a current ]
+scourge.print.current(current !scourge.current)() = {
+    [ setup strings ]
+    scourge.set("[ ")(header)
+    scourge.set(", ")(separator)
+    scourge.set(" ]")(footer)
+
+    [ print buffer ]
+    scourge.print.buffer_as_string(header)()
+    scourge.print.integer.unsigned(current:buffer:start)()
+    scourge.print.buffer_as_string(separator)()
+    scourge.print.integer.unsigned(current:buffer:end)()
+    scourge.print.buffer_as_string(separator)()
+    scourge.print.integer.unsigned(current:progress)()
+    scourge.print.buffer_as_string(footer)()
+}
+
+[ print a buffer as a string ]
+scourge.print.buffer_as_string(buffer !scourge.buffer)() = {
+    [ setup current ]
+    scourge.pack(buffer, buffer:start)(current_character !scourge.current)
+
+    [ print characters ]
+    @print scourge.always = {
+        [ check for end of string ]
+        scourge.current.within_range(current_character)(more_characters, out_of_characters)
+        scourge.jump.bottom(out_of_characters, @print)()
+
+        [ read character ]
+        scourge.address_to_cell(current_character:progress, scourge.ascii_character.byte_size)(character, current_character:progress)
+
+        [ print character ]
+        scourge.print.character(character)()
+
+        [ jump to loop start ]
+        scourge.jump.top(scourge.always, @print)()
+    }
+}
+
+[ print an unsigned integer ]
+scourge.print.integer.unsigned(value !scourge.cell)() = {
+    [ cast to string ]
+    scourge.cast.cell_to_decimal_string.higher_to_lower(value)(string)
+
+    [ print string ]
+    scourge.print.buffer_as_string(string)()
+
+    [ return string ]
+    scourge.buffer.return(string)()
+}
+
+[ print a binary number ]
+scourge.print.binary.lower_to_higher(value !scourge.cell)() = {
+    [ cast to string ]
+    scourge.cast.cell_to_binary_string.lower_to_higher(value)(string)
+
+    [ print string ]
+    scourge.print.buffer_as_string(string)()
+
+    [ return string ]
+    scourge.buffer.return(string)()
+}
+
+[ print a binary number ]
+scourge.print.binary.higher_to_lower(value !scourge.cell)() = {
+    [ cast to string ]
+    scourge.cast.cell_to_binary_string.higher_to_lower(value)(string)
+
+    [ print string ]
+    scourge.print.buffer_as_string(string)()
+
+    [ return string ]
+    scourge.buffer.return(string)()
+}
+
+[ print a text location ]
+scourge.print.text.location(location !scourge.text.location)() = {
+    [ setup strings ]
+    scourge.set("[ ")(header)
+    scourge.set(", ")(separator)
+    scourge.set(" ]")(footer)
+
+    [ print buffer ]
+    scourge.print.buffer_as_string(header)()
+    scourge.print.integer.unsigned(location:file_index)()
+    scourge.print.buffer_as_string(separator)()
+    scourge.print.integer.unsigned(location:line_number)()
+    scourge.print.buffer_as_string(separator)()
+    scourge.print.integer.unsigned(location:character_index)()
+    scourge.print.buffer_as_string(footer)()
+}

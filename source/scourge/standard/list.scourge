@@ -1,0 +1,194 @@
+[ list definition ]
+!scourge.list(
+    allocation !scourge.buffer,
+    length !scourge.cell, [ length of content ]
+    increase !scourge.cell [ when more space is needed, allocate in increments of 'increase' ]
+)
+
+[ open list ]
+scourge.list.open(increase !scourge.cell)(list !scourge.list) = {
+    [ allocate buffer ]
+    scourge.buffer.request(increase)(list:allocation)
+
+    [ setup list data ]
+    scourge.copy(scourge.constant.0)(list:length)
+    scourge.copy(increase)(list:increase)
+}
+
+[ close list ]
+scourge.list.close(list !scourge.list)() = {
+    [ deallocate buffer ]
+    scourge.buffer.return(list:allocation)()
+}
+
+[ calculate content buffer ]
+scourge.list.calculate.content_buffer(list !scourge.list)(content_buffer !scourge.buffer) = {
+    [ calculate content buffer ]
+    scourge.copy(list:allocation:start)(content_buffer:start)
+    scourge.buffer.calculate.end_address(content_buffer:start, list:length)(content_buffer:end)
+}
+
+[ append buffer data ]
+scourge.list.append.buffer_data(list !scourge.list, data !scourge.buffer)(list !scourge.list) = {
+    [ calculate lengths ]
+    scourge.buffer.calculate.length(data)(data.length)
+    scourge.buffer.calculate.length(list:allocation)(old_allocation.length)
+
+    [ calculate required length ]
+    scourge.integer.add(list:length, data.length)(required_length)
+
+    [ reallocate buffer if necessary ]
+    scourge.integer.within_range(scourge.constant.0, required_length, old_allocation.length)(skip, reallocate)
+    @reallocate reallocate = {
+        [ calculate chunk count ]
+        scourge.integer.divide(required_length, list:increase)(increase_chunk_count)
+        scourge.integer.add(increase_chunk_count, scourge.constant.1)(increase_chunk_count)
+
+        [ calculate required new allocation size ]
+        scourge.integer.multiply(increase_chunk_count, list:increase)(new_allocation.length)
+
+        [ allocate ]
+        scourge.buffer.request(new_allocation.length)(new_allocation)
+
+        [ calculate data copy buffers ]
+        scourge.list.calculate.content_buffer(list)(copy.source)
+        scourge.buffer.calculate.end_address(new_allocation:start, list:length)(destination.end)
+        scourge.pack(new_allocation:start, destination.end)(copy.destination !scourge.buffer)
+
+        [ copy old data ]
+        scourge.buffer.copy.low_to_high(copy.source, copy.destination)()
+
+        [ delete old allocation ]
+        scourge.buffer.return(list:allocation)()
+
+        [ install new allocation ]
+        scourge.copy(new_allocation)(list:allocation)
+    }
+
+    [ calculate appending addresses ]
+    scourge.integer.add(list:allocation:start, list:length)(append_destination.start)
+    scourge.buffer.calculate.end_address(append_destination.start, data.length)(append_destination.end)
+    scourge.pack(append_destination.start, append_destination.end)(append_destination !scourge.buffer)
+
+    [ append data ]
+    scourge.buffer.copy.low_to_high(data, append_destination)()
+
+    [ update length ]
+    scourge.copy(required_length)(list:length)
+}
+
+[ append cell structure to list ]
+scourge.list.append.cell(list !scourge.list, data !scourge.cell)(list !scourge.list) = {
+    [ calculate lengths ]
+    scourge.structure.byte_size(data)(data.length)
+    scourge.buffer.calculate.length(list:allocation)(old_allocation.length)
+
+    [ calculate required length ]
+    scourge.integer.add(list:length, data.length)(required_length)
+
+    [ reallocate buffer if necessary ]
+    scourge.integer.within_range(scourge.constant.0, required_length, old_allocation.length)(skip, reallocate)
+    @reallocate reallocate = {
+        [ calculate chunk count ]
+        scourge.integer.divide(required_length, list:increase)(increase_chunk_count)
+        scourge.integer.add(increase_chunk_count, scourge.constant.1)(increase_chunk_count)
+
+        [ calculate required new allocation size ]
+        scourge.integer.multiply(increase_chunk_count, list:increase)(new_allocation.length)
+
+        [ allocate ]
+        scourge.buffer.request(new_allocation.length)(new_allocation)
+
+        [ calculate data copy buffers ]
+        scourge.list.calculate.content_buffer(list)(copy.source)
+        scourge.buffer.calculate.end_address(new_allocation:start, list:length)(destination.end)
+        scourge.pack(new_allocation:start, destination.end)(copy.destination !scourge.buffer)
+
+        [ copy old data ]
+        scourge.buffer.copy.low_to_high(copy.source, copy.destination)()
+
+        [ delete old allocation ]
+        scourge.buffer.return(list:allocation)()
+
+        [ install new allocation ]
+        scourge.copy(new_allocation)(list:allocation)
+    }
+
+    [ calculate appending addresses ]
+    scourge.integer.add(list:allocation:start, list:length)(append_destination.start)
+    scourge.buffer.calculate.end_address(append_destination.start, data.length)(append_destination.end)
+    scourge.pack(append_destination.start, append_destination.end)(append_destination !scourge.buffer)
+
+    [ append data ]
+    scourge.structure_to_buffer(data, append_destination)(advancement)
+
+    [ update length ]
+    scourge.copy(required_length)(list:length)
+}
+
+[ append new line ]
+scourge.list.append.new_line(list !scourge.list)(list !scourge.list) = {
+    [ setup string ]
+    scourge.set("%0a;")(new_line)
+
+    [ append buffer ]
+    scourge.list.append.buffer_data(list, new_line)(list)
+}
+
+[ print tabs ]
+scourge.list.append.tabs(list !scourge.list, tab_count !scourge.cell)(list !scourge.list) = {
+    [ set tab ]
+    scourge.set("%09;")(tab)
+
+    [ print tabs until finished ]
+    @loop scourge.always = {
+        [ check for more characters ]
+        scourge.integer.within_range(scourge.constant.0, tab_count, scourge.constant.0)(finished, unfinished)
+        scourge.jump.bottom(finished, @loop)()
+
+        [ print tab ]
+        scourge.list.append.buffer_data(list, tab)(list)
+
+        [ next index ]
+        scourge.integer.subtract(tab_count, scourge.constant.1)(tab_count)
+
+        [ jump to loop start ]
+        scourge.jump.top(scourge.always, @loop)()
+    }
+}
+
+[ append buffer structure to list ]
+scourge.list.append.buffer(list !scourge.list, data !scourge.buffer)(list !scourge.list) = {
+    [ append members ]
+    scourge.list.append.cell(list, data:start)(list)
+    scourge.list.append.cell(list, data:end)(list)
+}
+
+[ append list structure to list ]
+scourge.list.append.list(list !scourge.list, data !scourge.list)(list !scourge.list) = {
+    [ append members ]
+    scourge.list.append.buffer(list, data:allocation)(list)
+    scourge.list.append.cell(list, data:length)(list)
+    scourge.list.append.cell(list, data:increase)(list)
+}
+
+[ append text location structure to list ]
+scourge.list.append.text.location(list !scourge.list, data !scourge.text.location)(list !scourge.list) = {
+    [ append members ]
+    scourge.list.append.cell(list, data:file_index)(list)
+    scourge.list.append.cell(list, data:line_number)(list)
+    scourge.list.append.cell(list, data:character_index)(list)
+}
+
+[ copy content to new buffer ]
+scourge.list.duplicate_content(list !scourge.list)(new_allocation !scourge.buffer) = {
+    [ calculate content buffer and size ]
+    scourge.list.calculate.content_buffer(list)(content)
+    scourge.buffer.calculate.length(content)(content.length)
+
+    [ allocate new buffer ]
+    scourge.buffer.request(content.length)(new_allocation)
+
+    [ duplicate data ]
+    scourge.buffer.copy.low_to_high(content, new_allocation)()
+}
