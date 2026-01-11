@@ -2,12 +2,12 @@
 #define SCOURGE__compiler__specifications
 
 /* Include */
-// anvil instructions
-#include "../../anvil_coder.h"
+// sailor instructions
+#include "../../sailor_coder.h"
 
 /* Define */
 // general compiler types
-typedef ANVIL__u64 COMPILER__index;
+typedef SAILOR__u64 COMPILER__index;
 typedef COMPILER__index COMPILER__argument_index;
 typedef COMPILER__index COMPILER__io_count;
 typedef COMPILER__io_count COMPILER__input_count;
@@ -16,14 +16,14 @@ typedef COMPILER__index COMPILER__accountling_index;
 typedef COMPILER__accountling_index COMPILER__variable_index;
 typedef COMPILER__accountling_index COMPILER__variable_type_index;
 typedef COMPILER__accountling_index COMPILER__variable_member_index;
-typedef ANVIL__u64 COMPILER__blueprintling;
+typedef SAILOR__u64 COMPILER__blueprintling;
 typedef COMPILER__index COMPILER__function_index;
 typedef COMPILER__index COMPILER__function_header_index;
 typedef COMPILER__index COMPILER__structure_index;
 typedef COMPILER__index COMPILER__structure_member_index;
 typedef COMPILER__structure_member_index COMPILER__structure_member_count;
-typedef ANVIL__buffer COMPILER__structure_handle;
-typedef ANVIL__buffer COMPILER__function_handle;
+typedef SAILOR__buffer COMPILER__structure_handle;
+typedef SAILOR__buffer COMPILER__function_handle;
 typedef COMPILER__index COMPILER__stack_index;
 typedef COMPILER__index COMPILER__offset_index;
 typedef COMPILER__index COMPILER__scope_index;
@@ -139,32 +139,32 @@ typedef enum COMPILER__pvn {
     COMPILER__pvn__context__output__error,
     COMPILER__pvn__call_stack,
 
-    // anvil scraplets
-    COMPILER__pvn__constant__anvil__instruction_ID__byte_size,
-    COMPILER__pvn__constant__anvil__flag_ID__byte_size,
-    COMPILER__pvn__constant__anvil__operation_ID__byte_size,
-    COMPILER__pvn__constant__anvil__cell_ID__byte_size,
-    COMPILER__pvn__constant__anvil__cell__byte_size,
-    COMPILER__pvn__constant__anvil__operation_ID__cell_to_cell,
-    COMPILER__pvn__constant__anvil__operation_ID__bits_or,
-    COMPILER__pvn__constant__anvil__operation_ID__bits_invert,
-    COMPILER__pvn__constant__anvil__operation_ID__bits_and,
-    COMPILER__pvn__constant__anvil__operation_ID__bits_xor,
-    COMPILER__pvn__constant__anvil__operation_ID__bits_shift_higher,
-    COMPILER__pvn__constant__anvil__operation_ID__bits_shift_lower,
-    COMPILER__pvn__constant__anvil__operation_ID__bits_overwrite,
-    COMPILER__pvn__constant__anvil__operation_ID__integer_add,
-    COMPILER__pvn__constant__anvil__operation_ID__integer_subtract,
-    COMPILER__pvn__constant__anvil__operation_ID__integer_multiply,
-    COMPILER__pvn__constant__anvil__operation_ID__integer_division,
-    COMPILER__pvn__constant__anvil__operation_ID__integer_modulous,
-    COMPILER__pvn__constant__anvil__operation_ID__integer_within_range,
-    COMPILER__pvn__constant__anvil__operation_ID__flag_or,
-    COMPILER__pvn__constant__anvil__operation_ID__flag_invert,
-    COMPILER__pvn__constant__anvil__operation_ID__flag_and,
-    COMPILER__pvn__constant__anvil__operation_ID__flag_xor,
-    COMPILER__pvn__constant__anvil__operation_ID__flag_get,
-    COMPILER__pvn__constant__anvil__operation_ID__flag_set,
+    // sailor scraplets
+    COMPILER__pvn__constant__sailor__instruction_ID__byte_size,
+    COMPILER__pvn__constant__sailor__flag_ID__byte_size,
+    COMPILER__pvn__constant__sailor__operation_ID__byte_size,
+    COMPILER__pvn__constant__sailor__cell_ID__byte_size,
+    COMPILER__pvn__constant__sailor__cell__byte_size,
+    COMPILER__pvn__constant__sailor__operation_ID__cell_to_cell,
+    COMPILER__pvn__constant__sailor__operation_ID__bits_or,
+    COMPILER__pvn__constant__sailor__operation_ID__bits_invert,
+    COMPILER__pvn__constant__sailor__operation_ID__bits_and,
+    COMPILER__pvn__constant__sailor__operation_ID__bits_xor,
+    COMPILER__pvn__constant__sailor__operation_ID__bits_shift_higher,
+    COMPILER__pvn__constant__sailor__operation_ID__bits_shift_lower,
+    COMPILER__pvn__constant__sailor__operation_ID__bits_overwrite,
+    COMPILER__pvn__constant__sailor__operation_ID__integer_add,
+    COMPILER__pvn__constant__sailor__operation_ID__integer_subtract,
+    COMPILER__pvn__constant__sailor__operation_ID__integer_multiply,
+    COMPILER__pvn__constant__sailor__operation_ID__integer_division,
+    COMPILER__pvn__constant__sailor__operation_ID__integer_modulous,
+    COMPILER__pvn__constant__sailor__operation_ID__integer_within_range,
+    COMPILER__pvn__constant__sailor__operation_ID__flag_or,
+    COMPILER__pvn__constant__sailor__operation_ID__flag_invert,
+    COMPILER__pvn__constant__sailor__operation_ID__flag_and,
+    COMPILER__pvn__constant__sailor__operation_ID__flag_xor,
+    COMPILER__pvn__constant__sailor__operation_ID__flag_get,
+    COMPILER__pvn__constant__sailor__operation_ID__flag_set,
 } COMPILER__pvn;
 // all predefined variable names
 char* COMPILER__global__predefined_variable_names[] = {
@@ -482,152 +482,152 @@ COMPILER__blueprintling COMPILER__global__predefined_variables[] = {
     COMPILER__abt__define_type,
         COMPILER__pvn__true,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__true,
-        ANVIL__srt__constant__true,
+        SAILOR__srt__constant__true,
+        SAILOR__srt__constant__true,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__false,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__false,
-        ANVIL__srt__constant__false,
+        SAILOR__srt__constant__false,
+        SAILOR__srt__constant__false,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__always,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__always_run__value,
-        ANVIL__srt__constant__always_run__value,
+        SAILOR__srt__constant__always_run__value,
+        SAILOR__srt__constant__always_run__value,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__never,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__never_run__value,
-        ANVIL__srt__constant__never_run__value,
+        SAILOR__srt__constant__never_run__value,
+        SAILOR__srt__constant__never_run__value,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__constant_0,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__0,
-        ANVIL__srt__constant__0,
+        SAILOR__srt__constant__0,
+        SAILOR__srt__constant__0,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__constant_1,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__1,
-        ANVIL__srt__constant__1,
+        SAILOR__srt__constant__1,
+        SAILOR__srt__constant__1,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__constant_2,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__2,
-        ANVIL__srt__constant__2,
+        SAILOR__srt__constant__2,
+        SAILOR__srt__constant__2,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__constant_3,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__3,
-        ANVIL__srt__constant__3,
+        SAILOR__srt__constant__3,
+        SAILOR__srt__constant__3,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__constant_4,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__4,
-        ANVIL__srt__constant__4,
+        SAILOR__srt__constant__4,
+        SAILOR__srt__constant__4,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__constant_5,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__5,
-        ANVIL__srt__constant__5,
+        SAILOR__srt__constant__5,
+        SAILOR__srt__constant__5,
         
     COMPILER__abt__define_type,
         COMPILER__pvn__constant_6,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__6,
-        ANVIL__srt__constant__6,
+        SAILOR__srt__constant__6,
+        SAILOR__srt__constant__6,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__constant_7,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__7,
-        ANVIL__srt__constant__7,
+        SAILOR__srt__constant__7,
+        SAILOR__srt__constant__7,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__constant_8,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__8,
-        ANVIL__srt__constant__8,
+        SAILOR__srt__constant__8,
+        SAILOR__srt__constant__8,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__constant_16,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__16,
-        ANVIL__srt__constant__16,
+        SAILOR__srt__constant__16,
+        SAILOR__srt__constant__16,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__constant_32,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__32,
-        ANVIL__srt__constant__32,
+        SAILOR__srt__constant__32,
+        SAILOR__srt__constant__32,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__constant_64,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__64,
-        ANVIL__srt__constant__64,
+        SAILOR__srt__constant__64,
+        SAILOR__srt__constant__64,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__error,
         COMPILER__ptt__scourge_cell,
-        ANVIL__rt__error_code,
-        ANVIL__rt__error_code,
+        SAILOR__rt__error_code,
+        SAILOR__rt__error_code,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__catch_addresses,
         COMPILER__ptt__scourge_cell,
-        ANVIL__rt__address_catch_toggle,
-        ANVIL__rt__address_catch_toggle,
+        SAILOR__rt__address_catch_toggle,
+        SAILOR__rt__address_catch_toggle,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__cell_byte_size,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__cell_byte_size,
-        ANVIL__srt__constant__cell_byte_size,
+        SAILOR__srt__constant__cell_byte_size,
+        SAILOR__srt__constant__cell_byte_size,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__context_byte_size,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__context_byte_size,
-        ANVIL__srt__constant__context_byte_size,
+        SAILOR__srt__constant__context_byte_size,
+        SAILOR__srt__constant__context_byte_size,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__ascii_character_byte_size,
         COMPILER__ptt__scourge_cell,
-        ANVIL__srt__constant__ascii_character_byte_size,
-        ANVIL__srt__constant__ascii_character_byte_size,
+        SAILOR__srt__constant__ascii_character_byte_size,
+        SAILOR__srt__constant__ascii_character_byte_size,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__context__input,
         COMPILER__ptt__scourge_buffer,
-        ANVIL__srt__input_buffer_start,
-        ANVIL__srt__input_buffer_end,
+        SAILOR__srt__input_buffer_start,
+        SAILOR__srt__input_buffer_end,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__context__output__result,
         COMPILER__ptt__scourge_buffer,
-        ANVIL__srt__output_result_buffer_start,
-        ANVIL__srt__output_result_buffer_end,
+        SAILOR__srt__output_result_buffer_start,
+        SAILOR__srt__output_result_buffer_end,
 
     COMPILER__abt__define_type,
         COMPILER__pvn__context__output__error,
         COMPILER__ptt__scourge_buffer,
-        ANVIL__srt__output_error_buffer_start,
-        ANVIL__srt__output_error_buffer_end,
+        SAILOR__srt__output_error_buffer_start,
+        SAILOR__srt__output_error_buffer_end,
     
     COMPILER__abt__define_type,
         COMPILER__pvn__call_stack,
         COMPILER__ptt__scourge_current,
-        ANVIL__srt__stack__start_address,
-        ANVIL__srt__stack__current_address,
+        SAILOR__srt__stack__start_address,
+        SAILOR__srt__stack__current_address,
         
     COMPILER__abt__end_blueprint,
 };
@@ -1049,12 +1049,12 @@ COMPILER__blueprintling COMPILER__global__predefined_one_off_function_calls[] = 
 
 // cell ranges
 typedef struct COMPILER__cell_range {
-    ANVIL__cell_ID start;
-    ANVIL__cell_ID end;
+    SAILOR__cell_ID start;
+    SAILOR__cell_ID end;
 } COMPILER__cell_range;
 
 // create custom cell range
-COMPILER__cell_range COMPILER__create__cell_range(ANVIL__cell_ID start, ANVIL__cell_ID end) {
+COMPILER__cell_range COMPILER__create__cell_range(SAILOR__cell_ID start, SAILOR__cell_ID end) {
     COMPILER__cell_range output;
 
     // setup output
@@ -1071,7 +1071,7 @@ COMPILER__cell_range COMPILER__create_null__cell_range() {
 
 /* Blueprints */
 // advance blueprintling by one
-void COMPILER__next__blueprintling(ANVIL__current* current) {
+void COMPILER__next__blueprintling(SAILOR__current* current) {
     // next blueprintling
     (*current).start += sizeof(COMPILER__blueprintling);
 
@@ -1079,12 +1079,12 @@ void COMPILER__next__blueprintling(ANVIL__current* current) {
 }
 
 // read one blueprintling but do not advance current
-COMPILER__blueprintling COMPILER__read__blueprintling(ANVIL__current* current) {
+COMPILER__blueprintling COMPILER__read__blueprintling(SAILOR__current* current) {
     return *(COMPILER__blueprintling*)(*current).start;
 }
 
 // read one blueprintling and advance current to next one
-COMPILER__blueprintling COMPILER__read_and_next__blueprintling(ANVIL__current* current) {
+COMPILER__blueprintling COMPILER__read_and_next__blueprintling(SAILOR__current* current) {
     COMPILER__blueprintling output;
 
     // read output
@@ -1098,8 +1098,8 @@ COMPILER__blueprintling COMPILER__read_and_next__blueprintling(ANVIL__current* c
 
 /* Translation */
 // calculate the amount of digits in a decimal number
-ANVIL__length COMPILER__calculate__decimals_digit_count_in_number(ANVIL__u64 number) {
-    ANVIL__length output = 0;
+SAILOR__length COMPILER__calculate__decimals_digit_count_in_number(SAILOR__u64 number) {
+    SAILOR__length output = 0;
 
     // check for zero
     if (number == 0) {
@@ -1119,22 +1119,22 @@ ANVIL__length COMPILER__calculate__decimals_digit_count_in_number(ANVIL__u64 num
 }
 
 // create buffer string from number
-ANVIL__buffer COMPILER__translate__integer_value_to_string(ANVIL__u64 number) {
-    ANVIL__buffer output;
-    ANVIL__length digit_count;
+SAILOR__buffer COMPILER__translate__integer_value_to_string(SAILOR__u64 number) {
+    SAILOR__buffer output;
+    SAILOR__length digit_count;
 
     // count digits
     digit_count = COMPILER__calculate__decimals_digit_count_in_number(number);
 
     // allocate output
-    output = ANVIL__open__buffer(sizeof(ANVIL__character) * digit_count);
+    output = SAILOR__open__buffer(sizeof(SAILOR__character) * digit_count);
 
     // if allocation succeded
-    if (ANVIL__check__empty_buffer(output) == ANVIL__bt__false) {
+    if (SAILOR__check__empty_buffer(output) == SAILOR__bt__false) {
         // calculate characters
-        for (ANVIL__u64 i = digit_count; i > 0; i--) {
+        for (SAILOR__u64 i = digit_count; i > 0; i--) {
             // create character
-            ((ANVIL__character*)output.start)[i - 1] = '0' + (number % 10);
+            ((SAILOR__character*)output.start)[i - 1] = '0' + (number % 10);
 
             // next character
             number /= 10;
@@ -1147,13 +1147,13 @@ ANVIL__buffer COMPILER__translate__integer_value_to_string(ANVIL__u64 number) {
 /* Character Locations */
 // parsing character location
 typedef struct COMPILER__character_location {
-    ANVIL__file_index file_index;
-    ANVIL__line_number line_number;
-    ANVIL__character_index character_index;
+    SAILOR__file_index file_index;
+    SAILOR__line_number line_number;
+    SAILOR__character_index character_index;
 } COMPILER__character_location;
 
 // create custom character marker location
-COMPILER__character_location COMPILER__create__character_location(ANVIL__file_index file_index, ANVIL__line_number line_number, ANVIL__character_index character_index) {
+COMPILER__character_location COMPILER__create__character_location(SAILOR__file_index file_index, SAILOR__line_number line_number, SAILOR__character_index character_index) {
     COMPILER__character_location output;
 
     output.file_index = file_index;
@@ -1171,14 +1171,14 @@ COMPILER__character_location COMPILER__create_null__character_location() {
 /* Errors */
 // error information
 typedef struct COMPILER__error {
-    ANVIL__bt occured;
-    ANVIL__buffer message;
+    SAILOR__bt occured;
+    SAILOR__buffer message;
     COMPILER__character_location location;
-    ANVIL__bt memory_error_occured;
+    SAILOR__bt memory_error_occured;
 } COMPILER__error;
 
 // create custom error
-COMPILER__error COMPILER__create__error(ANVIL__bt occured, ANVIL__buffer message, COMPILER__character_location location, ANVIL__bt memory_error_occured) {
+COMPILER__error COMPILER__create__error(SAILOR__bt occured, SAILOR__buffer message, COMPILER__character_location location, SAILOR__bt memory_error_occured) {
     COMPILER__error output;
 
     // setup output
@@ -1193,58 +1193,58 @@ COMPILER__error COMPILER__create__error(ANVIL__bt occured, ANVIL__buffer message
 // create null error
 COMPILER__error COMPILER__create_null__error() {
     // return empty
-    return COMPILER__create__error(ANVIL__bt__false, ANVIL__create_null__buffer(), COMPILER__create_null__character_location(), ANVIL__bt__false);
+    return COMPILER__create__error(SAILOR__bt__false, SAILOR__create_null__buffer(), COMPILER__create_null__character_location(), SAILOR__bt__false);
 }
 
 // open a specific error
 COMPILER__error COMPILER__open__error(const char* message, COMPILER__character_location location) {
-    return COMPILER__create__error(ANVIL__bt__true, ANVIL__open__buffer_from_string((u8*)message, ANVIL__bt__true, ANVIL__bt__false), location, ANVIL__bt__false);
+    return COMPILER__create__error(SAILOR__bt__true, SAILOR__open__buffer_from_string((u8*)message, SAILOR__bt__true, SAILOR__bt__false), location, SAILOR__bt__false);
 }
 
 // open a generic memory allocation error
 COMPILER__error COMPILER__open__internal_memory_error() {
-    return COMPILER__create__error(ANVIL__bt__true, ANVIL__open__buffer_from_string((u8*)"Internal memory error.", ANVIL__bt__true, ANVIL__bt__false), COMPILER__create_null__character_location(), ANVIL__bt__true);
+    return COMPILER__create__error(SAILOR__bt__true, SAILOR__open__buffer_from_string((u8*)"Internal memory error.", SAILOR__bt__true, SAILOR__bt__false), COMPILER__create_null__character_location(), SAILOR__bt__true);
 }
 
 // create an error report in json
-ANVIL__buffer COMPILER__serialize__error_json(COMPILER__error error, ANVIL__bt* error_occured) {
-    ANVIL__buffer output;
-    ANVIL__list json;
-    ANVIL__buffer temp_buffer;
+SAILOR__buffer COMPILER__serialize__error_json(COMPILER__error error, SAILOR__bt* error_occured) {
+    SAILOR__buffer output;
+    SAILOR__list json;
+    SAILOR__buffer temp_buffer;
 
     // initialize json string builder
-    json = ANVIL__open__list(sizeof(ANVIL__character) * 2048, error_occured);
+    json = SAILOR__open__list(sizeof(SAILOR__character) * 2048, error_occured);
 
     // generate json
-    ANVIL__list__append__buffer_data(&json, ANVIL__open__buffer_from_string((u8*)"\"error\": {\n\t\"message\": \"", ANVIL__bt__false, ANVIL__bt__false), error_occured);
-    ANVIL__list__append__buffer_data(&json, error.message, error_occured);
-    ANVIL__list__append__buffer_data(&json, ANVIL__open__buffer_from_string((u8*)"\",\n\t\"file_index\": \"", ANVIL__bt__false, ANVIL__bt__false), error_occured);
+    SAILOR__list__append__buffer_data(&json, SAILOR__open__buffer_from_string((u8*)"\"error\": {\n\t\"message\": \"", SAILOR__bt__false, SAILOR__bt__false), error_occured);
+    SAILOR__list__append__buffer_data(&json, error.message, error_occured);
+    SAILOR__list__append__buffer_data(&json, SAILOR__open__buffer_from_string((u8*)"\",\n\t\"file_index\": \"", SAILOR__bt__false, SAILOR__bt__false), error_occured);
     temp_buffer = COMPILER__translate__integer_value_to_string(error.location.file_index);
-    ANVIL__list__append__buffer_data(&json, temp_buffer, error_occured);
-    ANVIL__close__buffer(temp_buffer);
-    ANVIL__list__append__buffer_data(&json, ANVIL__open__buffer_from_string((u8*)"\",\n\t\"line_number\": \"", ANVIL__bt__false, ANVIL__bt__false), error_occured);
+    SAILOR__list__append__buffer_data(&json, temp_buffer, error_occured);
+    SAILOR__close__buffer(temp_buffer);
+    SAILOR__list__append__buffer_data(&json, SAILOR__open__buffer_from_string((u8*)"\",\n\t\"line_number\": \"", SAILOR__bt__false, SAILOR__bt__false), error_occured);
     temp_buffer = COMPILER__translate__integer_value_to_string(error.location.line_number);
-    ANVIL__list__append__buffer_data(&json, temp_buffer, error_occured);
-    ANVIL__close__buffer(temp_buffer);
-    ANVIL__list__append__buffer_data(&json, ANVIL__open__buffer_from_string((u8*)"\",\n\t\"character_index\": \"", ANVIL__bt__false, ANVIL__bt__false), error_occured);
+    SAILOR__list__append__buffer_data(&json, temp_buffer, error_occured);
+    SAILOR__close__buffer(temp_buffer);
+    SAILOR__list__append__buffer_data(&json, SAILOR__open__buffer_from_string((u8*)"\",\n\t\"character_index\": \"", SAILOR__bt__false, SAILOR__bt__false), error_occured);
     temp_buffer = COMPILER__translate__integer_value_to_string(error.location.character_index);
-    ANVIL__list__append__buffer_data(&json, temp_buffer, error_occured);
-    ANVIL__close__buffer(temp_buffer);
-    ANVIL__list__append__buffer_data(&json, ANVIL__open__buffer_from_string((u8*)"\"\n}\n", ANVIL__bt__false, ANVIL__bt__false), error_occured);
+    SAILOR__list__append__buffer_data(&json, temp_buffer, error_occured);
+    SAILOR__close__buffer(temp_buffer);
+    SAILOR__list__append__buffer_data(&json, SAILOR__open__buffer_from_string((u8*)"\"\n}\n", SAILOR__bt__false, SAILOR__bt__false), error_occured);
 
     // create buffer from list
-    output = ANVIL__list__open_buffer_from_list(&json, error_occured);
+    output = SAILOR__list__open_buffer_from_list(&json, error_occured);
 
     // clean up list
-    ANVIL__close__list(json);
+    SAILOR__close__list(json);
 
     return output;
 }
 
 // check to see if an error occured
-ANVIL__bt COMPILER__check__error_occured(COMPILER__error* error) {
+SAILOR__bt COMPILER__check__error_occured(COMPILER__error* error) {
     // check for memory error
-    if ((*error).memory_error_occured == ANVIL__bt__true) {
+    if ((*error).memory_error_occured == SAILOR__bt__true) {
         // set error
         *error = COMPILER__open__internal_memory_error();
     }
@@ -1255,32 +1255,32 @@ ANVIL__bt COMPILER__check__error_occured(COMPILER__error* error) {
 // close an error
 void COMPILER__close__error(COMPILER__error error) {
     // clean up buffers
-    ANVIL__close__buffer(error.message);
+    SAILOR__close__buffer(error.message);
 
     return;
 }
 
 /* List Functions With Errors */
 // open a list but the error is a compiler error
-ANVIL__list COMPILER__open__list_with_error(ANVIL__list_increase list_increase, COMPILER__error* error) {
+SAILOR__list COMPILER__open__list_with_error(SAILOR__list_increase list_increase, COMPILER__error* error) {
     // open with error
-    return ANVIL__open__list(list_increase, &((*error).memory_error_occured));
+    return SAILOR__open__list(list_increase, &((*error).memory_error_occured));
 }
 
 // append a buffer but the error is compiler
-void COMPILER__append__buffer_with_error(ANVIL__list* list, ANVIL__buffer buffer, COMPILER__error* error) {
-    ANVIL__list__append__buffer(list, buffer, &((*error).memory_error_occured));
+void COMPILER__append__buffer_with_error(SAILOR__list* list, SAILOR__buffer buffer, COMPILER__error* error) {
+    SAILOR__list__append__buffer(list, buffer, &((*error).memory_error_occured));
 
     return;
 }
 
 // append structure index
-void COMPILER__append__structure_index(ANVIL__list* list, COMPILER__structure_index data, COMPILER__error* error) {
+void COMPILER__append__structure_index(SAILOR__list* list, COMPILER__structure_index data, COMPILER__error* error) {
     // request space
-    ANVIL__list__request__space(list, sizeof(COMPILER__structure_index), &(*error).memory_error_occured);
+    SAILOR__list__request__space(list, sizeof(COMPILER__structure_index), &(*error).memory_error_occured);
 
     // append data
-    (*(COMPILER__structure_index*)ANVIL__calculate__list_current_address(list)) = data;
+    (*(COMPILER__structure_index*)SAILOR__calculate__list_current_address(list)) = data;
 
     // increase fill
     (*list).filled_index += sizeof(COMPILER__structure_index);
@@ -1289,12 +1289,12 @@ void COMPILER__append__structure_index(ANVIL__list* list, COMPILER__structure_in
 }
 
 // append function header index
-void COMPILER__append__function_header_index(ANVIL__list* list, COMPILER__function_header_index data, COMPILER__error* error) {
+void COMPILER__append__function_header_index(SAILOR__list* list, COMPILER__function_header_index data, COMPILER__error* error) {
     // request space
-    ANVIL__list__request__space(list, sizeof(COMPILER__function_header_index), &(*error).memory_error_occured);
+    SAILOR__list__request__space(list, sizeof(COMPILER__function_header_index), &(*error).memory_error_occured);
 
     // append data
-    (*(COMPILER__function_header_index*)ANVIL__calculate__list_current_address(list)) = data;
+    (*(COMPILER__function_header_index*)SAILOR__calculate__list_current_address(list)) = data;
 
     // increase fill
     (*list).filled_index += sizeof(COMPILER__function_header_index);
@@ -1303,120 +1303,120 @@ void COMPILER__append__function_header_index(ANVIL__list* list, COMPILER__functi
 }
 
 /* Counted List Functions With Errors */
-ANVIL__counted_list COMPILER__open__counted_list_with_error(ANVIL__list_increase increase, COMPILER__error* error) {
-    return ANVIL__create__counted_list(COMPILER__open__list_with_error(increase, error), 0);
+SAILOR__counted_list COMPILER__open__counted_list_with_error(SAILOR__list_increase increase, COMPILER__error* error) {
+    return SAILOR__create__counted_list(COMPILER__open__list_with_error(increase, error), 0);
 }
 
 /* Conversion */
 // translate string to boolean
-ANVIL__bt COMPILER__translate__string_to_boolean(ANVIL__buffer string, ANVIL__cell_integer_value* value) {
+SAILOR__bt COMPILER__translate__string_to_boolean(SAILOR__buffer string, SAILOR__cell_integer_value* value) {
     // check possible values
-    if (ANVIL__calculate__buffer_contents_equal(string, ANVIL__open__buffer_from_string((u8*)COMPILER__define__master_namespace ".boolean.false", ANVIL__bt__false, ANVIL__bt__false)) == ANVIL__bt__true) {
-        *value = (ANVIL__cell_integer_value)(ANVIL__bt__false);
+    if (SAILOR__calculate__buffer_contents_equal(string, SAILOR__open__buffer_from_string((u8*)COMPILER__define__master_namespace ".boolean.false", SAILOR__bt__false, SAILOR__bt__false)) == SAILOR__bt__true) {
+        *value = (SAILOR__cell_integer_value)(SAILOR__bt__false);
 
-        return ANVIL__bt__true;
+        return SAILOR__bt__true;
     }
-    if (ANVIL__calculate__buffer_contents_equal(string, ANVIL__open__buffer_from_string((u8*)COMPILER__define__master_namespace ".boolean.true", ANVIL__bt__false, ANVIL__bt__false)) == ANVIL__bt__true) {
-        *value = (ANVIL__cell_integer_value)(ANVIL__bt__true);
+    if (SAILOR__calculate__buffer_contents_equal(string, SAILOR__open__buffer_from_string((u8*)COMPILER__define__master_namespace ".boolean.true", SAILOR__bt__false, SAILOR__bt__false)) == SAILOR__bt__true) {
+        *value = (SAILOR__cell_integer_value)(SAILOR__bt__true);
 
-        return ANVIL__bt__true;
+        return SAILOR__bt__true;
     }
 
-    return ANVIL__bt__false;
+    return SAILOR__bt__false;
 }
 
 // translate string to binary
-ANVIL__bt COMPILER__translate__string_to_binary(ANVIL__buffer string, ANVIL__cell_integer_value* value) {
-    ANVIL__buffer prefix = ANVIL__open__buffer_from_string((u8*)COMPILER__define__master_namespace ".binary.", ANVIL__bt__false, ANVIL__bt__false);
-    ANVIL__buffer current;
-    ANVIL__u64 character_count_limit = sizeof(ANVIL__u64) * ANVIL__define__bits_in_byte;
-    ANVIL__u64 character_count = 0;
+SAILOR__bt COMPILER__translate__string_to_binary(SAILOR__buffer string, SAILOR__cell_integer_value* value) {
+    SAILOR__buffer prefix = SAILOR__open__buffer_from_string((u8*)COMPILER__define__master_namespace ".binary.", SAILOR__bt__false, SAILOR__bt__false);
+    SAILOR__buffer current;
+    SAILOR__u64 character_count_limit = sizeof(SAILOR__u64) * SAILOR__define__bits_in_byte;
+    SAILOR__u64 character_count = 0;
 
     // check for prefix
-    if (ANVIL__calculate__buffer_starts_with_buffer(string, prefix) == ANVIL__bt__false) {
+    if (SAILOR__calculate__buffer_starts_with_buffer(string, prefix) == SAILOR__bt__false) {
         // not a binary literal
-        return ANVIL__bt__false;
+        return SAILOR__bt__false;
     }
 
     // setup current
-    current = ANVIL__create__buffer(string.start + ANVIL__calculate__buffer_length(prefix), string.end);
+    current = SAILOR__create__buffer(string.start + SAILOR__calculate__buffer_length(prefix), string.end);
 
     // pre check for all valid characters
-    while (ANVIL__check__current_within_range(current)) {
+    while (SAILOR__check__current_within_range(current)) {
         // check character
-        if ((ANVIL__check__character_range_at_current(current, '0', '1') || ANVIL__check__character_range_at_current(current, '_', '_')) == ANVIL__bt__false) {
+        if ((SAILOR__check__character_range_at_current(current, '0', '1') || SAILOR__check__character_range_at_current(current, '_', '_')) == SAILOR__bt__false) {
             // not a binary literal
-            return ANVIL__bt__false;
+            return SAILOR__bt__false;
         }
 
         // count binary character
-        if (ANVIL__check__character_range_at_current(current, '0', '1') == ANVIL__bt__true) {
+        if (SAILOR__check__character_range_at_current(current, '0', '1') == SAILOR__bt__true) {
             character_count++;
         }
 
         // advance current
-        current.start += sizeof(ANVIL__character);
+        current.start += sizeof(SAILOR__character);
     }
 
     // check for same character limit
     if (character_count > character_count_limit) {
         // binary literal to large, conversion failed
-        return ANVIL__bt__false;
+        return SAILOR__bt__false;
     }
 
     // setup bit index
-    ANVIL__bit_count bit_index = 0;
+    SAILOR__bit_count bit_index = 0;
 
     // reset current
-    current = ANVIL__create__buffer(string.start + ANVIL__calculate__buffer_length(prefix), string.end);
+    current = SAILOR__create__buffer(string.start + SAILOR__calculate__buffer_length(prefix), string.end);
 
     // convert binary string to binary number
-    while (ANVIL__check__current_within_range(current)) {
-        if (ANVIL__check__character_range_at_current(current, '_', '_') == ANVIL__bt__false) {
+    while (SAILOR__check__current_within_range(current)) {
+        if (SAILOR__check__character_range_at_current(current, '_', '_') == SAILOR__bt__false) {
             // append value
-            *value += (((*(ANVIL__character*)current.start) - '0') << bit_index);
+            *value += (((*(SAILOR__character*)current.start) - '0') << bit_index);
 
             // next bit index
             bit_index++;
         }
 
         // next character
-        current.start += sizeof(ANVIL__character);
+        current.start += sizeof(SAILOR__character);
     }
 
-    return ANVIL__bt__true;
+    return SAILOR__bt__true;
 }
 
 // translate string to integer
-ANVIL__bt COMPILER__translate__string_to_integer(ANVIL__buffer string, ANVIL__cell_integer_value* value) {
-    ANVIL__buffer prefix = ANVIL__open__buffer_from_string((u8*)COMPILER__define__master_namespace ".integer.", ANVIL__bt__false, ANVIL__bt__false);
-    ANVIL__buffer suffix;
-    ANVIL__u64 digit = 0;
+SAILOR__bt COMPILER__translate__string_to_integer(SAILOR__buffer string, SAILOR__cell_integer_value* value) {
+    SAILOR__buffer prefix = SAILOR__open__buffer_from_string((u8*)COMPILER__define__master_namespace ".integer.", SAILOR__bt__false, SAILOR__bt__false);
+    SAILOR__buffer suffix;
+    SAILOR__u64 digit = 0;
 
     // check for prefix
-    if (ANVIL__calculate__buffer_starts_with_buffer(string, prefix) == ANVIL__bt__false) {
+    if (SAILOR__calculate__buffer_starts_with_buffer(string, prefix) == SAILOR__bt__false) {
         // not an integer literal
-        return ANVIL__bt__false;
+        return SAILOR__bt__false;
     }
 
     // create suffix
-    suffix = ANVIL__create__buffer(string.start + ANVIL__calculate__buffer_length(prefix), string.end);
+    suffix = SAILOR__create__buffer(string.start + SAILOR__calculate__buffer_length(prefix), string.end);
 
     // translate number
     // if number is negative
-    if (*(ANVIL__character*)suffix.start == (ANVIL__character)'n') {
+    if (*(SAILOR__character*)suffix.start == (SAILOR__character)'n') {
         // for each character
-        for (ANVIL__character_index i = ANVIL__calculate__buffer_length(suffix); i > 1; i--) {
+        for (SAILOR__character_index i = SAILOR__calculate__buffer_length(suffix); i > 1; i--) {
             // check for valid character
-            if (((((ANVIL__character*)suffix.start)[i - 1] >= '0' && ((ANVIL__character*)suffix.start)[i - 1] <= '9') || ((ANVIL__character*)suffix.start)[i - 1] == '_') == ANVIL__bt__false) {
+            if (((((SAILOR__character*)suffix.start)[i - 1] >= '0' && ((SAILOR__character*)suffix.start)[i - 1] <= '9') || ((SAILOR__character*)suffix.start)[i - 1] == '_') == SAILOR__bt__false) {
                 // invalid character
-                return ANVIL__bt__false;
+                return SAILOR__bt__false;
             }
 
             // if calculable character
-            if (((ANVIL__character*)suffix.start)[i - 1] != '_') {
+            if (((SAILOR__character*)suffix.start)[i - 1] != '_') {
                 // add value
-                *value += ANVIL__calculate__exponent(10, digit) * (((ANVIL__character*)suffix.start)[i - 1] - '0');
+                *value += SAILOR__calculate__exponent(10, digit) * (((SAILOR__character*)suffix.start)[i - 1] - '0');
 
                 // next digit power
                 digit++;
@@ -1429,17 +1429,17 @@ ANVIL__bt COMPILER__translate__string_to_integer(ANVIL__buffer string, ANVIL__ce
     // if number is positive
     } else {
         // for each character
-        for (ANVIL__character_index i = ANVIL__calculate__buffer_length(suffix); i > 0; i--) {
+        for (SAILOR__character_index i = SAILOR__calculate__buffer_length(suffix); i > 0; i--) {
             // check for valid character
-            if (((((ANVIL__character*)suffix.start)[i - 1] >= '0' && ((ANVIL__character*)suffix.start)[i - 1] <= '9') || ((ANVIL__character*)suffix.start)[i - 1] == '_') == ANVIL__bt__false) {
+            if (((((SAILOR__character*)suffix.start)[i - 1] >= '0' && ((SAILOR__character*)suffix.start)[i - 1] <= '9') || ((SAILOR__character*)suffix.start)[i - 1] == '_') == SAILOR__bt__false) {
                 // invalid character
-                return ANVIL__bt__false;
+                return SAILOR__bt__false;
             }
 
             // if calculable character
-            if (((ANVIL__character*)suffix.start)[i - 1] != '_') {
+            if (((SAILOR__character*)suffix.start)[i - 1] != '_') {
                 // add value
-                *value += ANVIL__calculate__exponent(10, digit) * (((ANVIL__character*)suffix.start)[i - 1] - '0');
+                *value += SAILOR__calculate__exponent(10, digit) * (((SAILOR__character*)suffix.start)[i - 1] - '0');
 
                 // next digit power
                 digit++;
@@ -1447,13 +1447,13 @@ ANVIL__bt COMPILER__translate__string_to_integer(ANVIL__buffer string, ANVIL__ce
         }
     }
 
-    return ANVIL__bt__true;
+    return SAILOR__bt__true;
 }
 
 // translate character to hexadecimal
-ANVIL__cell_integer_value COMPILER__translate__character_to_hexadecimal(ANVIL__character character, ANVIL__bt* invalid_character) {
+SAILOR__cell_integer_value COMPILER__translate__character_to_hexadecimal(SAILOR__character character, SAILOR__bt* invalid_character) {
     // set character as valid
-    *invalid_character = ANVIL__bt__false;
+    *invalid_character = SAILOR__bt__false;
 
     // translate character
     if (character >= '0' && character <= '9') {
@@ -1464,68 +1464,68 @@ ANVIL__cell_integer_value COMPILER__translate__character_to_hexadecimal(ANVIL__c
         return character - 'A' + 10;
     } else {
         // invalid character
-        *invalid_character = ANVIL__bt__true;
+        *invalid_character = SAILOR__bt__true;
     }
 
-    return ANVIL__define__null_address;
+    return SAILOR__define__null_address;
 }
 
 // translate string to hexedecimal
-ANVIL__bt COMPILER__translate__string_to_hexadecimal(ANVIL__buffer string, ANVIL__cell_integer_value* value) {
-    ANVIL__buffer prefix = ANVIL__open__buffer_from_string((u8*)COMPILER__define__master_namespace ".hexadecimal.", ANVIL__bt__false, ANVIL__bt__false);
-    ANVIL__buffer suffix;
-    ANVIL__buffer current;
-    ANVIL__bt invalid_character;
-    ANVIL__cell_integer_value hex_digit;
+SAILOR__bt COMPILER__translate__string_to_hexadecimal(SAILOR__buffer string, SAILOR__cell_integer_value* value) {
+    SAILOR__buffer prefix = SAILOR__open__buffer_from_string((u8*)COMPILER__define__master_namespace ".hexadecimal.", SAILOR__bt__false, SAILOR__bt__false);
+    SAILOR__buffer suffix;
+    SAILOR__buffer current;
+    SAILOR__bt invalid_character;
+    SAILOR__cell_integer_value hex_digit;
 
     // check for prefix
-    if (ANVIL__calculate__buffer_starts_with_buffer(string, prefix) == ANVIL__bt__false) {
+    if (SAILOR__calculate__buffer_starts_with_buffer(string, prefix) == SAILOR__bt__false) {
         // not a hexadecimal literal
-        return ANVIL__bt__false;
+        return SAILOR__bt__false;
     }
 
     // create suffix
-    suffix = ANVIL__create__buffer(string.start + ANVIL__calculate__buffer_length(prefix), string.end);
+    suffix = SAILOR__create__buffer(string.start + SAILOR__calculate__buffer_length(prefix), string.end);
 
     // create current
     current = suffix;
 
     // validate number
-    while (ANVIL__check__current_within_range(current)) {
+    while (SAILOR__check__current_within_range(current)) {
         // check separator
-        if (*(ANVIL__character*)current.start == '_') {
+        if (*(SAILOR__character*)current.start == '_') {
             // skip
-            current.start += sizeof(ANVIL__character);
+            current.start += sizeof(SAILOR__character);
 
             continue;
         }
 
         // check digit
-        hex_digit = COMPILER__translate__character_to_hexadecimal(*(ANVIL__character*)current.start, &invalid_character);
-        if (invalid_character == ANVIL__bt__true) {
+        hex_digit = COMPILER__translate__character_to_hexadecimal(*(SAILOR__character*)current.start, &invalid_character);
+        if (invalid_character == SAILOR__bt__true) {
             // invalid digit, invalid hex string
-            return ANVIL__bt__false;
+            return SAILOR__bt__false;
         }
 
         // next character
-        current.start += sizeof(ANVIL__character);
+        current.start += sizeof(SAILOR__character);
     }
 
     // create current
     current = suffix;
 
     // translate number
-    while (ANVIL__check__current_within_range(current)) {
+    while (SAILOR__check__current_within_range(current)) {
         // check separator
-        if (*(ANVIL__character*)current.start == '_') {
+        if (*(SAILOR__character*)current.start == '_') {
             // skip
-            current.start += sizeof(ANVIL__character);
+            current.start += sizeof(SAILOR__character);
 
             continue;
         }
 
         // check digit
-        hex_digit = COMPILER__translate__character_to_hexadecimal(*(ANVIL__character*)current.start, &invalid_character);
+        hex_digit = COMPILER__translate__character_to_hexadecimal(*(SAILOR__character*)current.start, &invalid_character);
 
         // append digit
         *value = (*value) << 4;
@@ -1533,14 +1533,14 @@ ANVIL__bt COMPILER__translate__string_to_hexadecimal(ANVIL__buffer string, ANVIL
         *value = (*value) + hex_digit;
 
         // next character
-        current.start += sizeof(ANVIL__character);
+        current.start += sizeof(SAILOR__character);
     }
 
-    return ANVIL__bt__true;
+    return SAILOR__bt__true;
 }
 
-ANVIL__buffer COMPILER__convert__general_argument_type_to_string_buffer(COMPILER__pat argument_type) {
-    return ANVIL__open__buffer_from_string((u8*)(COMPILER__global__general_argument_type_names[argument_type]), ANVIL__bt__false, ANVIL__bt__false);
+SAILOR__buffer COMPILER__convert__general_argument_type_to_string_buffer(COMPILER__pat argument_type) {
+    return SAILOR__open__buffer_from_string((u8*)(COMPILER__global__general_argument_type_names[argument_type]), SAILOR__bt__false, SAILOR__bt__false);
 }
 
 #endif

@@ -12,8 +12,8 @@
 /* Compilation Unit */
 // one compiled object across multiple stages
 typedef struct COMPILER__compilation_unit {
-    ANVIL__buffer user_codes;
-    ANVIL__list standard_files;
+    SAILOR__buffer user_codes;
+    SAILOR__list standard_files;
     COMPILER__lexlings lexlings;
     COMPILER__parsling_program parslings;
     COMPILER__accountling_program accountlings;
@@ -23,9 +23,9 @@ typedef struct COMPILER__compilation_unit {
 // close a compilation unit
 void COMPILER__close__compilation_unit(COMPILER__compilation_unit unit, COMPILER__error* error) {
     // check for standard include files
-    if (ANVIL__check__empty_list(unit.standard_files) == ANVIL__bt__false) {
+    if (SAILOR__check__empty_list(unit.standard_files) == SAILOR__bt__false) {
         // close list
-        ANVIL__close__list(unit.standard_files);
+        SAILOR__close__list(unit.standard_files);
     }
 
     // close lexling buffer
@@ -48,17 +48,17 @@ void COMPILER__close__compilation_unit(COMPILER__compilation_unit unit, COMPILER
 
 /* Generate Debug */
 // append a string
-void COMPILER__generate__debug_information__string(ANVIL__list* json, char* string_data, COMPILER__error* error) {
+void COMPILER__generate__debug_information__string(SAILOR__list* json, char* string_data, COMPILER__error* error) {
     // append string
-    ANVIL__list__append__buffer_data(json, ANVIL__open__buffer_from_string((u8*)string_data, ANVIL__bt__false, ANVIL__bt__false), &(*error).memory_error_occured);
+    SAILOR__list__append__buffer_data(json, SAILOR__open__buffer_from_string((u8*)string_data, SAILOR__bt__false, SAILOR__bt__false), &(*error).memory_error_occured);
 
     return;
 }
 
 // append tab depth
-void COMPILER__generate__debug_information__tabs(ANVIL__list* json, ANVIL__tab_count tab_depth, COMPILER__error* error) {
+void COMPILER__generate__debug_information__tabs(SAILOR__list* json, SAILOR__tab_count tab_depth, COMPILER__error* error) {
     // append tabs
-    for (ANVIL__tab_count index = 0; index < tab_depth; index++) {
+    for (SAILOR__tab_count index = 0; index < tab_depth; index++) {
         // append tab
         COMPILER__generate__debug_information__string(json, "\t", error);
         if (COMPILER__check__error_occured(error)) {
@@ -70,7 +70,7 @@ void COMPILER__generate__debug_information__tabs(ANVIL__list* json, ANVIL__tab_c
 }
 
 // write string to list
-void COMPILER__generate__debug_information__buffer_as_string(ANVIL__list* json, ANVIL__buffer string_data, COMPILER__error* error) {
+void COMPILER__generate__debug_information__buffer_as_string(SAILOR__list* json, SAILOR__buffer string_data, COMPILER__error* error) {
     // append starting quote
     COMPILER__generate__debug_information__string(json, "\"", error);
     if (COMPILER__check__error_occured(error)) {
@@ -78,7 +78,7 @@ void COMPILER__generate__debug_information__buffer_as_string(ANVIL__list* json, 
     }
 
     // append string data quote
-    ANVIL__list__append__buffer_data(json, string_data, &(*error).memory_error_occured);
+    SAILOR__list__append__buffer_data(json, string_data, &(*error).memory_error_occured);
     if (COMPILER__check__error_occured(error)) {
         return;
     }
@@ -90,21 +90,21 @@ void COMPILER__generate__debug_information__buffer_as_string(ANVIL__list* json, 
 }
 
 // write a value as an integer to a list
-void COMPILER__generate__debug_information__integer_literal(ANVIL__list* json, ANVIL__u64 value, COMPILER__error* error) {
+void COMPILER__generate__debug_information__integer_literal(SAILOR__list* json, SAILOR__u64 value, COMPILER__error* error) {
     // generate the integer
-    ANVIL__buffer string_value = ANVIL__cast__integer_to_unsigned_base_10(value);
+    SAILOR__buffer string_value = SAILOR__cast__integer_to_unsigned_base_10(value);
 
     // write value
-    ANVIL__list__append__buffer_data(json, string_value, &(*error).memory_error_occured);
+    SAILOR__list__append__buffer_data(json, string_value, &(*error).memory_error_occured);
 
     // deallocate string
-    ANVIL__close__buffer(string_value);
+    SAILOR__close__buffer(string_value);
 
     return;
 }
 
 // generate and write variable header to list
-void COMPILER__generate__debug_information__json_variable_header(ANVIL__list* json, ANVIL__buffer variable_name, COMPILER__error* error) {
+void COMPILER__generate__debug_information__json_variable_header(SAILOR__list* json, SAILOR__buffer variable_name, COMPILER__error* error) {
     // print string
     COMPILER__generate__debug_information__buffer_as_string(json, variable_name, error);
     if (COMPILER__check__error_occured(error)) {
@@ -118,9 +118,9 @@ void COMPILER__generate__debug_information__json_variable_header(ANVIL__list* js
 }
 
 // generate an integer value with a variable header
-void COMPILER__generate__debug_information__integer_variable(ANVIL__list* json, const char* variable_name, ANVIL__u64 value, COMPILER__error* error) {
+void COMPILER__generate__debug_information__integer_variable(SAILOR__list* json, const char* variable_name, SAILOR__u64 value, COMPILER__error* error) {
     // append header
-    COMPILER__generate__debug_information__json_variable_header(json, ANVIL__open__buffer_from_string((u8*)variable_name, ANVIL__bt__false, ANVIL__bt__false), error);
+    COMPILER__generate__debug_information__json_variable_header(json, SAILOR__open__buffer_from_string((u8*)variable_name, SAILOR__bt__false, SAILOR__bt__false), error);
     if (COMPILER__check__error_occured(error)) {
         return;
     }
@@ -132,7 +132,7 @@ void COMPILER__generate__debug_information__integer_variable(ANVIL__list* json, 
 }
 
 // generate one lexling's debug information
-void COMPILER__generate__debug_information__lexling(ANVIL__list* json, COMPILER__lexling lexling, ANVIL__bt is_last, ANVIL__tab_count tabs, COMPILER__error* error) {
+void COMPILER__generate__debug_information__lexling(SAILOR__list* json, COMPILER__lexling lexling, SAILOR__bt is_last, SAILOR__tab_count tabs, COMPILER__error* error) {
     // print tabs
     COMPILER__generate__debug_information__tabs(json, tabs, error);
     if (COMPILER__check__error_occured(error)) {
@@ -141,39 +141,39 @@ void COMPILER__generate__debug_information__lexling(ANVIL__list* json, COMPILER_
 
     // print lexling
     // print opener
-    ANVIL__list__append__buffer_data(json, ANVIL__open__buffer_from_string((u8*)"{ ", ANVIL__bt__false, ANVIL__bt__false), &(*error).memory_error_occured);
+    SAILOR__list__append__buffer_data(json, SAILOR__open__buffer_from_string((u8*)"{ ", SAILOR__bt__false, SAILOR__bt__false), &(*error).memory_error_occured);
     if (COMPILER__check__error_occured(error)) {
         return;
     }
 
     // setup separator
-    ANVIL__buffer separator = ANVIL__open__buffer_from_string((u8*)", ", ANVIL__bt__false, ANVIL__bt__false);
+    SAILOR__buffer separator = SAILOR__open__buffer_from_string((u8*)", ", SAILOR__bt__false, SAILOR__bt__false);
 
     // print values & separators
-    COMPILER__generate__debug_information__integer_variable(json, "type", (ANVIL__u64)lexling.type, error);
-    ANVIL__list__append__buffer_data(json, separator, &(*error).memory_error_occured);
-    COMPILER__generate__debug_information__integer_variable(json, "value.start", (ANVIL__u64)lexling.value.start, error);
-    ANVIL__list__append__buffer_data(json, separator, &(*error).memory_error_occured);
-    COMPILER__generate__debug_information__integer_variable(json, "value.end", (ANVIL__u64)lexling.value.end, error);
-    ANVIL__list__append__buffer_data(json, separator, &(*error).memory_error_occured);
-    COMPILER__generate__debug_information__integer_variable(json, "location.file_index", (ANVIL__u64)lexling.location.file_index, error);
-    ANVIL__list__append__buffer_data(json, separator, &(*error).memory_error_occured);
-    COMPILER__generate__debug_information__integer_variable(json, "location.line_number", (ANVIL__u64)lexling.location.line_number, error);
-    ANVIL__list__append__buffer_data(json, separator, &(*error).memory_error_occured);
-    COMPILER__generate__debug_information__integer_variable(json, "location.character_index", (ANVIL__u64)lexling.location.character_index, error);
+    COMPILER__generate__debug_information__integer_variable(json, "type", (SAILOR__u64)lexling.type, error);
+    SAILOR__list__append__buffer_data(json, separator, &(*error).memory_error_occured);
+    COMPILER__generate__debug_information__integer_variable(json, "value.start", (SAILOR__u64)lexling.value.start, error);
+    SAILOR__list__append__buffer_data(json, separator, &(*error).memory_error_occured);
+    COMPILER__generate__debug_information__integer_variable(json, "value.end", (SAILOR__u64)lexling.value.end, error);
+    SAILOR__list__append__buffer_data(json, separator, &(*error).memory_error_occured);
+    COMPILER__generate__debug_information__integer_variable(json, "location.file_index", (SAILOR__u64)lexling.location.file_index, error);
+    SAILOR__list__append__buffer_data(json, separator, &(*error).memory_error_occured);
+    COMPILER__generate__debug_information__integer_variable(json, "location.line_number", (SAILOR__u64)lexling.location.line_number, error);
+    SAILOR__list__append__buffer_data(json, separator, &(*error).memory_error_occured);
+    COMPILER__generate__debug_information__integer_variable(json, "location.character_index", (SAILOR__u64)lexling.location.character_index, error);
 
     // print close
-    if (is_last == ANVIL__bt__false) {
-        ANVIL__list__append__buffer_data(json, ANVIL__open__buffer_from_string((u8*)" },\n", ANVIL__bt__false, ANVIL__bt__false), &(*error).memory_error_occured);
+    if (is_last == SAILOR__bt__false) {
+        SAILOR__list__append__buffer_data(json, SAILOR__open__buffer_from_string((u8*)" },\n", SAILOR__bt__false, SAILOR__bt__false), &(*error).memory_error_occured);
     } else {
-        ANVIL__list__append__buffer_data(json, ANVIL__open__buffer_from_string((u8*)" }\n", ANVIL__bt__false, ANVIL__bt__false), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer_data(json, SAILOR__open__buffer_from_string((u8*)" }\n", SAILOR__bt__false, SAILOR__bt__false), &(*error).memory_error_occured);
     }
 
     return;
 }
 
 // generate all lexlings information
-void COMPILER__generate__debug_information__lexlings(ANVIL__list* json, COMPILER__lexlings lexlings, ANVIL__tab_count tabs, COMPILER__error* error) {
+void COMPILER__generate__debug_information__lexlings(SAILOR__list* json, COMPILER__lexlings lexlings, SAILOR__tab_count tabs, COMPILER__error* error) {
     // print header tabs
     COMPILER__generate__debug_information__tabs(json, tabs, error);
     if (COMPILER__check__error_occured(error)) {
@@ -181,13 +181,13 @@ void COMPILER__generate__debug_information__lexlings(ANVIL__list* json, COMPILER
     }
 
     // print lexlings name
-    COMPILER__generate__debug_information__buffer_as_string(json, ANVIL__open__buffer_from_string((u8*)"lexlings", ANVIL__bt__false, ANVIL__bt__false), error);
+    COMPILER__generate__debug_information__buffer_as_string(json, SAILOR__open__buffer_from_string((u8*)"lexlings", SAILOR__bt__false, SAILOR__bt__false), error);
     if (COMPILER__check__error_occured(error)) {
         return;
     }
 
     // print value setting
-    ANVIL__list__append__buffer_data(json, ANVIL__open__buffer_from_string((u8*)": [\n", ANVIL__bt__false, ANVIL__bt__false), &(*error).memory_error_occured);
+    SAILOR__list__append__buffer_data(json, SAILOR__open__buffer_from_string((u8*)": [\n", SAILOR__bt__false, SAILOR__bt__false), &(*error).memory_error_occured);
     if (COMPILER__check__error_occured(error)) {
         return;
     }
@@ -209,7 +209,7 @@ void COMPILER__generate__debug_information__lexlings(ANVIL__list* json, COMPILER
     }
 
     // print end
-    ANVIL__list__append__buffer_data(json, ANVIL__open__buffer_from_string((u8*)"]\n", ANVIL__bt__false, ANVIL__bt__false), &(*error).memory_error_occured);
+    SAILOR__list__append__buffer_data(json, SAILOR__open__buffer_from_string((u8*)"]\n", SAILOR__bt__false, SAILOR__bt__false), &(*error).memory_error_occured);
     if (COMPILER__check__error_occured(error)) {
         return;
     }
@@ -218,16 +218,16 @@ void COMPILER__generate__debug_information__lexlings(ANVIL__list* json, COMPILER
 }
 
 // serialize debug information to json
-ANVIL__buffer COMPILER__generate__debug_information(COMPILER__compilation_unit unit, ANVIL__tab_count tabs, COMPILER__error* error) {
+SAILOR__buffer COMPILER__generate__debug_information(COMPILER__compilation_unit unit, SAILOR__tab_count tabs, COMPILER__error* error) {
     // setup list
-    ANVIL__list json_data = COMPILER__open__list_with_error(sizeof(ANVIL__character) * 65536, error);
-    ANVIL__list* json = &json_data;
+    SAILOR__list json_data = COMPILER__open__list_with_error(sizeof(SAILOR__character) * 65536, error);
+    SAILOR__list* json = &json_data;
     if (COMPILER__check__error_occured(error)) {
-        return ANVIL__create_null__buffer();
+        return SAILOR__create_null__buffer();
     }
 
     // setup master opening bracket
-    ANVIL__list__append__buffer_data(json, ANVIL__open__buffer_from_string((u8*)"{\n", ANVIL__bt__false, ANVIL__bt__false), &(*error).memory_error_occured);
+    SAILOR__list__append__buffer_data(json, SAILOR__open__buffer_from_string((u8*)"{\n", SAILOR__bt__false, SAILOR__bt__false), &(*error).memory_error_occured);
     if (COMPILER__check__error_occured(error)) {
         goto bufferify;
     }
@@ -236,19 +236,19 @@ ANVIL__buffer COMPILER__generate__debug_information(COMPILER__compilation_unit u
     COMPILER__generate__debug_information__lexlings(json, unit.lexlings, tabs + 1, error);
 
     // setup master closing bracket
-    ANVIL__list__append__buffer_data(json, ANVIL__open__buffer_from_string((u8*)"}\n", ANVIL__bt__false, ANVIL__bt__false), &(*error).memory_error_occured);
+    SAILOR__list__append__buffer_data(json, SAILOR__open__buffer_from_string((u8*)"}\n", SAILOR__bt__false, SAILOR__bt__false), &(*error).memory_error_occured);
     if (COMPILER__check__error_occured(error)) {
         goto bufferify;
     }
 
     // turn list into new buffer and return
     bufferify: json = json;
-    ANVIL__buffer json_buffer_temp = ANVIL__calculate__list_current_buffer(json);
-    ANVIL__buffer output = ANVIL__open__buffer(ANVIL__calculate__buffer_length(json_buffer_temp));
-    ANVIL__copy__buffer(json_buffer_temp, output, &(*error).memory_error_occured);
+    SAILOR__buffer json_buffer_temp = SAILOR__calculate__list_current_buffer(json);
+    SAILOR__buffer output = SAILOR__open__buffer(SAILOR__calculate__buffer_length(json_buffer_temp));
+    SAILOR__copy__buffer(json_buffer_temp, output, &(*error).memory_error_occured);
 
     // deallocate old list
-    ANVIL__close__list(json_data);
+    SAILOR__close__list(json_data);
 
     // return buffer
     return output;
@@ -256,14 +256,14 @@ ANVIL__buffer COMPILER__generate__debug_information(COMPILER__compilation_unit u
 
 /* Compile */
 // compile a program
-void COMPILER__compile__files(ANVIL__buffer user_codes, ANVIL__bt include_standard_files, ANVIL__bt generate_kickstarter, ANVIL__bt print_debug, ANVIL__bt generate_debug, ANVIL__buffer* final_program, ANVIL__buffer* debug_information, COMPILER__error* error) {
+void COMPILER__compile__files(SAILOR__buffer user_codes, SAILOR__bt include_standard_files, SAILOR__bt generate_kickstarter, SAILOR__bt print_debug, SAILOR__bt generate_debug, SAILOR__buffer* final_program, SAILOR__buffer* debug_information, COMPILER__error* error) {
     COMPILER__compilation_unit compilation_unit;
 
     // setup blank error
     *error = COMPILER__create_null__error();
 
     // check for empty buffer
-    if (ANVIL__check__empty_buffer(user_codes)) {
+    if (SAILOR__check__empty_buffer(user_codes)) {
         // set error
         *error = COMPILER__open__error("Compilation Error: No source files were passed.", COMPILER__create_null__character_location());
 
@@ -275,36 +275,36 @@ void COMPILER__compile__files(ANVIL__buffer user_codes, ANVIL__bt include_standa
     compilation_unit.stages_completed = COMPILER__pst__invalid;
 
     // setup preincluded files buffer
-    ANVIL__buffer standard_files = ANVIL__create_null__buffer();
+    SAILOR__buffer standard_files = SAILOR__create_null__buffer();
 
     // setup standard files
-    if (include_standard_files == ANVIL__bt__true) {
+    if (include_standard_files == SAILOR__bt__true) {
         // create list
-        compilation_unit.standard_files = ANVIL__open__list(sizeof(ANVIL__buffer) * 16, &(*error).memory_error_occured);
+        compilation_unit.standard_files = SAILOR__open__list(sizeof(SAILOR__buffer) * 16, &(*error).memory_error_occured);
         if (COMPILER__check__error_occured(error)) {
             goto quit;
         }
 
         // append files
-        ANVIL__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_print_scourge, __source_scourge_standard_print_scourge_len), &(*error).memory_error_occured);
-        ANVIL__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_cast_scourge, __source_scourge_standard_cast_scourge_len), &(*error).memory_error_occured);
-        ANVIL__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_buffer_scourge, __source_scourge_standard_buffer_scourge_len), &(*error).memory_error_occured);
-        ANVIL__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_current_scourge, __source_scourge_standard_current_scourge_len), &(*error).memory_error_occured);
-        ANVIL__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_list_scourge, __source_scourge_standard_list_scourge_len), &(*error).memory_error_occured);
-        ANVIL__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_context_scourge, __source_scourge_standard_context_scourge_len), &(*error).memory_error_occured);
-        ANVIL__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_check_scourge, __source_scourge_standard_check_scourge_len), &(*error).memory_error_occured);
-        ANVIL__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_error_scourge, __source_scourge_standard_error_scourge_len), &(*error).memory_error_occured);
-        ANVIL__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_json_scourge, __source_scourge_standard_json_scourge_len), &(*error).memory_error_occured);
-        ANVIL__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_time_scourge, __source_scourge_standard_time_scourge_len), &(*error).memory_error_occured);
-        ANVIL__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_anvil_scourge, __source_scourge_standard_anvil_scourge_len), &(*error).memory_error_occured);
-        ANVIL__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_compile_scourge, __source_scourge_standard_compile_scourge_len), &(*error).memory_error_occured);
-        ANVIL__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_just_run_scourge, __source_scourge_standard_just_run_scourge_len), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_print_scourge, __source_scourge_standard_print_scourge_len), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_cast_scourge, __source_scourge_standard_cast_scourge_len), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_buffer_scourge, __source_scourge_standard_buffer_scourge_len), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_current_scourge, __source_scourge_standard_current_scourge_len), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_list_scourge, __source_scourge_standard_list_scourge_len), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_context_scourge, __source_scourge_standard_context_scourge_len), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_check_scourge, __source_scourge_standard_check_scourge_len), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_error_scourge, __source_scourge_standard_error_scourge_len), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_json_scourge, __source_scourge_standard_json_scourge_len), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_time_scourge, __source_scourge_standard_time_scourge_len), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_sailor_scourge, __source_scourge_standard_sailor_scourge_len), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_compile_scourge, __source_scourge_standard_compile_scourge_len), &(*error).memory_error_occured);
+        SAILOR__list__append__buffer(&compilation_unit.standard_files, STANDARD__bufferify__any_file(__source_scourge_standard_just_run_scourge, __source_scourge_standard_just_run_scourge_len), &(*error).memory_error_occured);
 
         // create content buffer
-        standard_files = ANVIL__calculate__list_current_buffer(&compilation_unit.standard_files);
+        standard_files = SAILOR__calculate__list_current_buffer(&compilation_unit.standard_files);
     // standard files are not included
     } else {
-        compilation_unit.standard_files = ANVIL__create_null__list();
+        compilation_unit.standard_files = SAILOR__create_null__list();
     }
 
     // print compilation message
@@ -374,18 +374,18 @@ void COMPILER__compile__files(ANVIL__buffer user_codes, ANVIL__bt include_standa
         // if error occured with json serialization, return failure buffer
         if (COMPILER__check__error_occured(&json_generation_error)) {
             // check for allocated buffer
-            if (ANVIL__check__empty_buffer(*debug_information) == ANVIL__bt__false) {
+            if (SAILOR__check__empty_buffer(*debug_information) == SAILOR__bt__false) {
                 // close buffer
-                ANVIL__close__buffer(*debug_information);
+                SAILOR__close__buffer(*debug_information);
             }
 
             // setup dummy string
-            *debug_information = ANVIL__open__buffer_from_string((u8*)"\"message\": \"Debug information failed to serialize. Oops...\"", ANVIL__bt__true, ANVIL__bt__false);
+            *debug_information = SAILOR__open__buffer_from_string((u8*)"\"message\": \"Debug information failed to serialize. Oops...\"", SAILOR__bt__true, SAILOR__bt__false);
         }
     // otherwise, generate blank debug info
     } else {
         // setup no information
-        *debug_information = ANVIL__create_null__buffer();
+        *debug_information = SAILOR__create_null__buffer();
     }
 
     // clean up

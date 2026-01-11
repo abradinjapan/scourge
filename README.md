@@ -4,7 +4,7 @@ A programming language designed to aid programming language development by using
 
 ## How?
 
-By running compiled scourge code on a binary interpeter, being called 'vessel', it is possible to call the compiler through the interpreter.
+By running compiled scourge code on a binary interpeter, being called 'Sailor', it is possible to call the compiler through the interpreter.
 In doing so, it is possible to generate, compile, integrate, run and get results back from code on the fly.
 
 This allows for things like:

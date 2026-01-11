@@ -1,11 +1,11 @@
-// anvil
-#include "anvil.h"
+// sailor
+#include "sailor.h"
 
 // c
 #include <stdio.h>
 
 // print context
-void MAIN__print__context(ANVIL__context* context) {
+void MAIN__print__context(SAILOR__context* context) {
     u64 cell_index;
     u64 row_items;
 
@@ -13,23 +13,23 @@ void MAIN__print__context(ANVIL__context* context) {
     cell_index = 0;
 
     // print program size
-    printf("Program Size: [ %lu ]\n", ((ANVIL__u64)(*context).cells[ANVIL__rt__program_end_address] - (ANVIL__u64)(*context).cells[ANVIL__rt__program_start_address]));
+    printf("Program Size: [ %lu ]\n", ((SAILOR__u64)(*context).cells[SAILOR__rt__program_end_address] - (SAILOR__u64)(*context).cells[SAILOR__rt__program_start_address]));
 
     // print cells section header
     printf("Cells:\n");
 
     // print rows
-    while (cell_index < ANVIL__rt__TOTAL_COUNT) {
+    while (cell_index < SAILOR__rt__TOTAL_COUNT) {
         // set row items
         row_items = 0;
 
         // print padding
-        printf("\t%lu: [", (ANVIL__u64)cell_index);
+        printf("\t%lu: [", (SAILOR__u64)cell_index);
 
         // print columns
-        while (cell_index < ANVIL__rt__TOTAL_COUNT && row_items < 8) {
+        while (cell_index < SAILOR__rt__TOTAL_COUNT && row_items < 8) {
             // print cell value
-            printf(" %lu", (ANVIL__u64)(*context).cells[cell_index]);
+            printf(" %lu", (SAILOR__u64)(*context).cells[cell_index]);
 
             // next
             cell_index++;
@@ -48,16 +48,16 @@ void MAIN__print__context(ANVIL__context* context) {
 
 // entry point
 int main(int argc, char** argv) {
-    ANVIL__list files;
-    ANVIL__bt debug_mode = ANVIL__bt__false;
-    ANVIL__u64 current_argument = 1;
+    SAILOR__list files;
+    SAILOR__bt debug_mode = SAILOR__bt__false;
+    SAILOR__u64 current_argument = 1;
     COMPILER__error error;
 
     // init error
     error = COMPILER__create_null__error();
 
     // open files list
-    files = COMPILER__open__list_with_error(sizeof(ANVIL__buffer) * 32, &error);
+    files = COMPILER__open__list_with_error(sizeof(SAILOR__buffer) * 32, &error);
     if (COMPILER__check__error_occured(&error)) {
         printf("Error, could not open files list.\n");
 
@@ -67,30 +67,30 @@ int main(int argc, char** argv) {
     // check if there are enough arguments
     if (argc > 1) {
         // check for debug mode
-        if (ANVIL__calculate__buffer_contents_equal(ANVIL__open__buffer_from_string((u8*)"--debug", ANVIL__bt__false, ANVIL__bt__false), ANVIL__open__buffer_from_string((u8*)argv[current_argument], ANVIL__bt__false, ANVIL__bt__false))) {
+        if (SAILOR__calculate__buffer_contents_equal(SAILOR__open__buffer_from_string((u8*)"--debug", SAILOR__bt__false, SAILOR__bt__false), SAILOR__open__buffer_from_string((u8*)argv[current_argument], SAILOR__bt__false, SAILOR__bt__false))) {
             // enable debug mode
-            debug_mode = ANVIL__bt__true;
+            debug_mode = SAILOR__bt__true;
 
             // skip to next input
             current_argument++;
         }
 
         // load files
-        while (current_argument < (ANVIL__u64)argc) {
+        while (current_argument < (SAILOR__u64)argc) {
             // get file
-            ANVIL__buffer file = ANVIL__move__file_to_buffer(ANVIL__open__buffer_from_string((u8*)argv[current_argument], ANVIL__bt__false, ANVIL__bt__true));
+            SAILOR__buffer file = SAILOR__move__file_to_buffer(SAILOR__open__buffer_from_string((u8*)argv[current_argument], SAILOR__bt__false, SAILOR__bt__true));
 
             // check for blank file
-            if (ANVIL__check__empty_buffer(file)) {
+            if (SAILOR__check__empty_buffer(file)) {
                 // file could no be opened
-                printf("Error, file \"%s\" could not be opened.\n", (char*)ANVIL__open__buffer_from_string((u8*)argv[current_argument], ANVIL__bt__false, ANVIL__bt__true).start);
+                printf("Error, file \"%s\" could not be opened.\n", (char*)SAILOR__open__buffer_from_string((u8*)argv[current_argument], SAILOR__bt__false, SAILOR__bt__true).start);
 
                 goto clean_up;
             }
 
             // add file
             COMPILER__append__buffer_with_error(&files, file, &error);
-            if (COMPILER__check__error_occured(&error) == ANVIL__bt__true) {
+            if (COMPILER__check__error_occured(&error) == SAILOR__bt__true) {
                 printf("Error, could not add buffer to inputs list.");
 
                 goto clean_up;
@@ -101,21 +101,21 @@ int main(int argc, char** argv) {
         }
 
         // if files were passed
-        if (ANVIL__check__current_within_range(ANVIL__calculate__current_from_list_filled_index(&files)) == ANVIL__bt__true) {
+        if (SAILOR__check__current_within_range(SAILOR__calculate__current_from_list_filled_index(&files)) == SAILOR__bt__true) {
             // setup output
-            ANVIL__buffer program = ANVIL__create_null__buffer();
-            ANVIL__buffer debug_information = ANVIL__create_null__buffer();
+            SAILOR__buffer program = SAILOR__create_null__buffer();
+            SAILOR__buffer debug_information = SAILOR__create_null__buffer();
 
             // run compiler
-            COMPILER__compile__files(ANVIL__calculate__list_current_buffer(&files), ANVIL__bt__true, ANVIL__bt__true, debug_mode, ANVIL__bt__true, &program, &debug_information, &error);
+            COMPILER__compile__files(SAILOR__calculate__list_current_buffer(&files), SAILOR__bt__true, SAILOR__bt__true, debug_mode, SAILOR__bt__true, &program, &debug_information, &error);
 
             // if error
             if (COMPILER__check__error_occured(&error)) {
                 // setup json error
-                ANVIL__bt json_error_occured = ANVIL__bt__false;
+                SAILOR__bt json_error_occured = SAILOR__bt__false;
 
                 // get message
-                ANVIL__buffer error_json = COMPILER__serialize__error_json(error, &json_error_occured);
+                SAILOR__buffer error_json = COMPILER__serialize__error_json(error, &json_error_occured);
                 if (json_error_occured) {
                     printf("Failed to serialize json error, oops.\n");
 
@@ -124,16 +124,16 @@ int main(int argc, char** argv) {
 
                 // print error
                 fflush(stdout);
-                ANVIL__print__buffer(error_json);
+                SAILOR__print__buffer(error_json);
 
                 // deallocate error message
-                ANVIL__close__buffer(error_json);
+                SAILOR__close__buffer(error_json);
             // no error occured, run code
             } else {
-                ANVIL__bt memory_error_occured = ANVIL__bt__false;
+                SAILOR__bt memory_error_occured = SAILOR__bt__false;
 
                 // setup allocations
-                ANVIL__allocations allocations = ANVIL__open__allocations(&memory_error_occured);
+                SAILOR__allocations allocations = SAILOR__open__allocations(&memory_error_occured);
                 if (memory_error_occured) {
                     printf("Internal Error: Program built successfully, but allocations failed to open.\n");
 
@@ -141,13 +141,13 @@ int main(int argc, char** argv) {
                 }
 
                 // add allocations
-                ANVIL__remember__allocation(&allocations, program, &memory_error_occured);
+                SAILOR__remember__allocation(&allocations, program, &memory_error_occured);
                 if (memory_error_occured) {
                     printf("Internal Error: Program built successfully, but program allocations failed to append.\n");
 
                     goto close_debug_information;
                 }
-                ANVIL__remember__allocation(&allocations, debug_information, &memory_error_occured);
+                SAILOR__remember__allocation(&allocations, debug_information, &memory_error_occured);
                 if (memory_error_occured) {
                     printf("Internal Error: Program built successfully, but debug allocations failed to append.\n");
 
@@ -155,9 +155,9 @@ int main(int argc, char** argv) {
                 }
 
                 // setup context
-                ANVIL__buffer context_buffer = ANVIL__open__buffer(sizeof(ANVIL__context));
-                *(ANVIL__context*)context_buffer.start = ANVIL__setup__context(program);
-                ANVIL__remember__allocation(&allocations, context_buffer, &memory_error_occured);
+                SAILOR__buffer context_buffer = SAILOR__open__buffer(sizeof(SAILOR__context));
+                *(SAILOR__context*)context_buffer.start = SAILOR__setup__context(program);
+                SAILOR__remember__allocation(&allocations, context_buffer, &memory_error_occured);
                 if (memory_error_occured) {
                     printf("Internal Error: Program built successfully, but allocations failed to append.\n");
                 
@@ -165,37 +165,37 @@ int main(int argc, char** argv) {
                 }
 
                 // print debug
-                if (debug_mode == ANVIL__bt__true) {
+                if (debug_mode == SAILOR__bt__true) {
                     // print error json
-                    ANVIL__print__buffer(debug_information);
+                    SAILOR__print__buffer(debug_information);
                 
                     // print header
                     printf("Running program...\n------------------\n");
                 }
 
                 // run code
-                ANVIL__run__context(&allocations, (ANVIL__context*)context_buffer.start, ANVIL__define__run_forever);
+                SAILOR__run__context(&allocations, (SAILOR__context*)context_buffer.start, SAILOR__define__run_forever);
 
                 // print debug
-                if (debug_mode == ANVIL__bt__true) {
+                if (debug_mode == SAILOR__bt__true) {
                     printf("\n");
                 }
 
                 // close program
-                ANVIL__close__buffer(program);
+                SAILOR__close__buffer(program);
 
                 // close context
                 close_context:
-                ANVIL__close__buffer(context_buffer);
+                SAILOR__close__buffer(context_buffer);
 
                 // close allocations
                 close_allocations:
-                ANVIL__close__allocations(&allocations);
+                SAILOR__close__allocations(&allocations);
             }
 
             // close debug information
             close_debug_information:
-            ANVIL__close__buffer(debug_information);
+            SAILOR__close__buffer(debug_information);
         // if no files
         } else {
             printf("Error, no file paths were passed.\n");
@@ -203,15 +203,15 @@ int main(int argc, char** argv) {
 
         // clean up
         clean_up:
-        if (error.occured == ANVIL__bt__true) {
+        if (error.occured == SAILOR__bt__true) {
             COMPILER__close__error(error);
         }
-        ANVIL__current current_file = ANVIL__calculate__current_from_list_filled_index(&files);
-        while (ANVIL__check__current_within_range(current_file)) {
-            ANVIL__close__buffer(*(ANVIL__buffer*)current_file.start);
-            current_file.start += sizeof(ANVIL__buffer);
+        SAILOR__current current_file = SAILOR__calculate__current_from_list_filled_index(&files);
+        while (SAILOR__check__current_within_range(current_file)) {
+            SAILOR__close__buffer(*(SAILOR__buffer*)current_file.start);
+            current_file.start += sizeof(SAILOR__buffer);
         }
-        ANVIL__close__list(files);
+        SAILOR__close__list(files);
     // not enough args
     } else {
         printf("Error, no arguments were passed.\n");

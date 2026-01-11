@@ -10,7 +10,7 @@ all:
 	xxd -i ./source/scourge/standard/error.scourge > ./build_temps/scourge-error.c
 	xxd -i ./source/scourge/standard/json.scourge > ./build_temps/scourge-json.c
 	xxd -i ./source/scourge/standard/time.scourge > ./build_temps/scourge-time.c
-	xxd -i ./source/scourge/standard/anvil.scourge > ./build_temps/scourge-anvil.c
+	xxd -i ./source/scourge/standard/sailor.scourge > ./build_temps/scourge-sailor.c
 	xxd -i ./source/scourge/standard/compile.scourge > ./build_temps/scourge-compile.c
 	xxd -i ./source/scourge/standard/just_run.scourge > ./build_temps/scourge-just_run.c
 
