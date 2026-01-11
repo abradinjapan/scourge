@@ -185,6 +185,23 @@ void SAILOR__write_next__buffer_contents(SAILOR__workspace* workspace, SAILOR__b
     return;
 }
 
+/* Scraplet Groups */
+// buffer
+typedef struct SAILOR__cell_ID_buffer {
+    SAILOR__cell_ID start;
+    SAILOR__cell_ID end;
+} SAILOR__cell_ID_buffer;
+
+// create cell_id_buffer
+SAILOR__cell_ID_buffer SAILOR__create__cell_ID_buffer(SAILOR__cell_ID start, SAILOR__cell_ID end) {
+    SAILOR__cell_ID_buffer output;
+
+    output.start = start;
+    output.end = end;
+
+    return output;
+}
+
 /* Write Instructions */
 // write buffer data
 void SAILOR__code__buffer_contents(SAILOR__workspace* workspace, SAILOR__buffer buffer) {
@@ -227,12 +244,12 @@ void SAILOR__code__operate(SAILOR__workspace* workspace, SAILOR__flag_ID flag_ID
 }
 
 // write request memory instruction
-void SAILOR__code__request_memory(SAILOR__workspace* workspace, SAILOR__cell_ID allocation_size, SAILOR__cell_ID allocation_start, SAILOR__cell_ID allocation_end) {
+void SAILOR__code__request_memory(SAILOR__workspace* workspace, SAILOR__cell_ID allocation_size, SAILOR__cell_ID_buffer allocation) {
     // write instruction
     SAILOR__write_next__instruction_ID(workspace, SAILOR__it__request_memory);
     SAILOR__write_next__cell_ID(workspace, allocation_size);
-    SAILOR__write_next__cell_ID(workspace, allocation_start);
-    SAILOR__write_next__cell_ID(workspace, allocation_end);
+    SAILOR__write_next__cell_ID(workspace, allocation.start);
+    SAILOR__write_next__cell_ID(workspace, allocation.end);
 
     return;
 }
@@ -781,7 +798,7 @@ void SAILOR__code__start(SAILOR__workspace* workspace, SAILOR__stack_size stack_
 
     // setup stack
     SAILOR__code__write_cell(workspace, (SAILOR__cell)stack_size, SAILOR__srt__temp__write);
-    SAILOR__code__request_memory(workspace, SAILOR__srt__temp__write, SAILOR__srt__stack__start_address, SAILOR__srt__stack__end_address);
+    SAILOR__code__request_memory(workspace, SAILOR__srt__temp__write, SAILOR__create__cell_ID_buffer(SAILOR__srt__stack__start_address, SAILOR__srt__stack__end_address));
     SAILOR__code__cell_to_cell(workspace, (SAILOR__flag_ID)SAILOR__sft__always_run, SAILOR__srt__stack__start_address, SAILOR__srt__stack__current_address);
 
     // jump to main
@@ -917,16 +934,16 @@ void SAILOR__code__retrieve_embedded_buffer(SAILOR__workspace* workspace, SAILOR
 }
 
 // setup context
-void SAILOR__code__setup__context(SAILOR__workspace* workspace, SAILOR__cell_ID program_buffer_start, SAILOR__cell_ID program_buffer_end, SAILOR__cell_ID context_buffer_start, SAILOR__cell_ID context_buffer_end) {
+void SAILOR__code__setup__context(SAILOR__workspace* workspace, SAILOR__cell_ID program_buffer_start, SAILOR__cell_ID program_buffer_end, SAILOR__cell_ID_buffer context) {
     // setup allocation size
     SAILOR__code__write_cell(workspace, (SAILOR__cell)sizeof(SAILOR__context), SAILOR__srt__temp__write);
 
     // allocate context
-    SAILOR__code__request_memory(workspace, SAILOR__srt__temp__write, context_buffer_start, context_buffer_end);
+    SAILOR__code__request_memory(workspace, SAILOR__srt__temp__write, context);
 
     // setup skeleton context
     // setup buffer start
-    SAILOR__code__cell_to_cell(workspace, SAILOR__sft__always_run, context_buffer_start, SAILOR__srt__temp__address);
+    SAILOR__code__cell_to_cell(workspace, SAILOR__sft__always_run, context.start, SAILOR__srt__temp__address);
     SAILOR__code__cell_to_address(workspace, SAILOR__sft__always_run, program_buffer_start, SAILOR__srt__constant__cell_byte_size, SAILOR__srt__temp__address);
 
     // setup current address

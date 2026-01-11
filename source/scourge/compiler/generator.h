@@ -295,7 +295,7 @@ void COMPILER__generate__user_defined_function_scope(COMPILER__generation_worksp
 
             break;
         case COMPILER__ast__predefined__buffer__request:
-            SAILOR__code__request_memory(sailor, COMPILER__generate__use_variable(buffer_acquisition__buffer_length).cells.start, COMPILER__generate__use_variable(buffer_acquisition__buffer_result).cells.start, COMPILER__generate__use_variable(buffer_acquisition__buffer_result).cells.end);
+            SAILOR__code__request_memory(sailor, COMPILER__generate__use_variable(buffer_acquisition__buffer_length).cells.start, SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(buffer_acquisition__buffer_result).cells.start, COMPILER__generate__use_variable(buffer_acquisition__buffer_result).cells.end));
 
             break;
         case COMPILER__ast__predefined__buffer__return:
