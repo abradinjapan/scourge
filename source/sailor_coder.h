@@ -255,11 +255,11 @@ void SAILOR__code__request_memory(SAILOR__workspace* workspace, SAILOR__cell_ID 
 }
 
 // write return memory instruction
-void SAILOR__code__return_memory(SAILOR__workspace* workspace, SAILOR__cell_ID allocation_start, SAILOR__cell_ID allocation_end) {
+void SAILOR__code__return_memory(SAILOR__workspace* workspace, SAILOR__cell_ID_buffer allocation) {
     // write instruction
     SAILOR__write_next__instruction_ID(workspace, SAILOR__it__return_memory);
-    SAILOR__write_next__cell_ID(workspace, allocation_start);
-    SAILOR__write_next__cell_ID(workspace, allocation_end);
+    SAILOR__write_next__cell_ID(workspace, allocation.start);
+    SAILOR__write_next__cell_ID(workspace, allocation.end);
 
     return;
 }
@@ -743,6 +743,9 @@ void SAILOR__code__inner_call__static(SAILOR__workspace* workspace, SAILOR__flag
 
 // kickstart program (assumes program variables are set!)
 void SAILOR__code__start(SAILOR__workspace* workspace, SAILOR__stack_size stack_size, SAILOR__offset jump_to) {
+    // cell groups
+    SAILOR__cell_ID_buffer stack = SAILOR__create__cell_ID_buffer(SAILOR__srt__stack__start_address, SAILOR__srt__stack__end_address);
+
     // setup code marker
     SAILOR__code__debug__mark_code_section(workspace, 0);
 
@@ -798,14 +801,14 @@ void SAILOR__code__start(SAILOR__workspace* workspace, SAILOR__stack_size stack_
 
     // setup stack
     SAILOR__code__write_cell(workspace, (SAILOR__cell)stack_size, SAILOR__srt__temp__write);
-    SAILOR__code__request_memory(workspace, SAILOR__srt__temp__write, SAILOR__create__cell_ID_buffer(SAILOR__srt__stack__start_address, SAILOR__srt__stack__end_address));
-    SAILOR__code__cell_to_cell(workspace, (SAILOR__flag_ID)SAILOR__sft__always_run, SAILOR__srt__stack__start_address, SAILOR__srt__stack__current_address);
+    SAILOR__code__request_memory(workspace, SAILOR__srt__temp__write, stack);
+    SAILOR__code__cell_to_cell(workspace, (SAILOR__flag_ID)SAILOR__sft__always_run, stack.start, SAILOR__srt__stack__current_address);
 
     // jump to main
     SAILOR__code__inner_call__static(workspace, SAILOR__sft__always_run, jump_to);
 
     // deallocate stack
-    SAILOR__code__return_memory(workspace, SAILOR__srt__stack__start_address, SAILOR__srt__stack__end_address);
+    SAILOR__code__return_memory(workspace, stack);
 
     // quit program
     SAILOR__code__stop(workspace);
