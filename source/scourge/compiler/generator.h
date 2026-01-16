@@ -341,7 +341,7 @@ void COMPILER__generate__user_defined_function_scope(COMPILER__generation_worksp
 
             break;
         case COMPILER__ast__predefined__mover__buffer_to_file:
-            SAILOR__code__buffer_to_file(sailor, COMPILER__generate__use_variable(file_buffer_mover__buffer_0).cells.start, COMPILER__generate__use_variable(file_buffer_mover__buffer_0).cells.end, COMPILER__generate__use_variable(file_buffer_mover__file_path).cells.start, COMPILER__generate__use_variable(file_buffer_mover__file_path).cells.end);
+            SAILOR__code__buffer_to_file(sailor, SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(file_buffer_mover__buffer_0).cells.start, COMPILER__generate__use_variable(file_buffer_mover__buffer_0).cells.end), SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(file_buffer_mover__file_path).cells.start, COMPILER__generate__use_variable(file_buffer_mover__file_path).cells.end));
             
             break;
         case COMPILER__ast__predefined__mover__buffer_copy__low_to_high:

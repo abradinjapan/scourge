@@ -301,13 +301,13 @@ void SAILOR__code__file_to_buffer(SAILOR__workspace* workspace, SAILOR__cell_ID_
 }
 
 // write buffer to file instruction
-void SAILOR__code__buffer_to_file(SAILOR__workspace* workspace, SAILOR__cell_ID file_data_start, SAILOR__cell_ID file_data_end, SAILOR__cell_ID file_name_start, SAILOR__cell_ID file_name_end) {
+void SAILOR__code__buffer_to_file(SAILOR__workspace* workspace, SAILOR__cell_ID_buffer file_data, SAILOR__cell_ID_buffer file_name) {
     // write instruction
     SAILOR__write_next__instruction_ID(workspace, SAILOR__it__buffer_to_file);
-    SAILOR__write_next__cell_ID(workspace, file_data_start);
-    SAILOR__write_next__cell_ID(workspace, file_data_end);
-    SAILOR__write_next__cell_ID(workspace, file_name_start);
-    SAILOR__write_next__cell_ID(workspace, file_name_end);
+    SAILOR__write_next__cell_ID(workspace, file_data.start);
+    SAILOR__write_next__cell_ID(workspace, file_data.end);
+    SAILOR__write_next__cell_ID(workspace, file_name.start);
+    SAILOR__write_next__cell_ID(workspace, file_name.end);
 
     return;
 }
