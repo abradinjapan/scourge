@@ -1047,28 +1047,6 @@ COMPILER__blueprintling COMPILER__global__predefined_one_off_function_calls[] = 
     COMPILER__abt__end_blueprint,
 };
 
-// cell ranges
-typedef struct COMPILER__cell_range {
-    SAILOR__cell_ID start;
-    SAILOR__cell_ID end;
-} COMPILER__cell_range;
-
-// create custom cell range
-COMPILER__cell_range COMPILER__create__cell_range(SAILOR__cell_ID start, SAILOR__cell_ID end) {
-    COMPILER__cell_range output;
-
-    // setup output
-    output.start = start;
-    output.end = end;
-
-    return output;
-}
-
-// create null cell range
-COMPILER__cell_range COMPILER__create_null__cell_range() {
-    return COMPILER__create__cell_range(0, 0);
-}
-
 /* Blueprints */
 // advance blueprintling by one
 void COMPILER__next__blueprintling(SAILOR__current* current) {

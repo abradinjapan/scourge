@@ -503,11 +503,11 @@ typedef struct COMPILER__accountling_variable {
     COMPILER__lexling name;
     COMPILER__variable_type_index type;
     COMPILER__accountling_variable_range members;
-    COMPILER__cell_range cells;
+    SAILOR__cell_ID_buffer cells;
 } COMPILER__accountling_variable;
 
 // create an accountling variable
-COMPILER__accountling_variable COMPILER__create__accountling_variable(COMPILER__lexling name, COMPILER__variable_type_index type, COMPILER__accountling_variable_range members, COMPILER__cell_range cells) {
+COMPILER__accountling_variable COMPILER__create__accountling_variable(COMPILER__lexling name, COMPILER__variable_type_index type, COMPILER__accountling_variable_range members, SAILOR__cell_ID_buffer cells) {
     COMPILER__accountling_variable output;
 
     // setup output
@@ -521,7 +521,7 @@ COMPILER__accountling_variable COMPILER__create__accountling_variable(COMPILER__
 
 // create null accountling variable
 COMPILER__accountling_variable COMPILER__create_null__accountling_variable() {
-    return COMPILER__create__accountling_variable(COMPILER__create_null__lexling(), 0, COMPILER__create__accountling_variable_range(0, 0), COMPILER__create__cell_range(0, 0));
+    return COMPILER__create__accountling_variable(COMPILER__create_null__lexling(), 0, COMPILER__create__accountling_variable_range(0, 0), SAILOR__create_null__cell_ID_buffer());
 }
 
 // append accountling variable
@@ -2055,12 +2055,12 @@ COMPILER__accountling_variable_argument COMPILER__account__functions__get_variab
 }
 
 // calculate cell range
-COMPILER__cell_range COMPILER__calculate_and_advance__cells(COMPILER__accountling_structures structures, COMPILER__accountling_function* function, COMPILER__variable_type_index type) {
+SAILOR__cell_ID_buffer COMPILER__calculate_and_advance__cells(COMPILER__accountling_structures structures, COMPILER__accountling_function* function, COMPILER__variable_type_index type) {
     // get length
     SAILOR__cell_count length = ((COMPILER__accountling_structure*)structures.data_table.list.buffer.start)[type].cell_count;
 
     // calculate cell range
-    COMPILER__cell_range output = COMPILER__create__cell_range((*function).next_available_workspace_cell, (*function).next_available_workspace_cell + length - 1);
+    SAILOR__cell_ID_buffer output = SAILOR__create__cell_ID_buffer((*function).next_available_workspace_cell, (*function).next_available_workspace_cell + length - 1);
 
     // adjust cell range
     (*function).next_available_workspace_cell += length;
@@ -2096,11 +2096,11 @@ COMPILER__accountling_variable_range COMPILER__account__functions__mark_variable
         // declare new variable
         if (member.structure_ID >= structures.data_table.count) {
             // declare variable
-            ((COMPILER__accountling_variable*)(*accountling_function).variables.lists[COMPILER__avat__member].list.buffer.start)[index] = COMPILER__create__accountling_variable(COMPILER__get__lexling_by_index(member.name.lexlings, 0), member.structure_ID, COMPILER__create__accountling_variable_range(-1, -1), COMPILER__create__cell_range(*current_sub_cell, *current_sub_cell));
+            ((COMPILER__accountling_variable*)(*accountling_function).variables.lists[COMPILER__avat__member].list.buffer.start)[index] = COMPILER__create__accountling_variable(COMPILER__get__lexling_by_index(member.name.lexlings, 0), member.structure_ID, COMPILER__create__accountling_variable_range(-1, -1), SAILOR__create__cell_ID_buffer(*current_sub_cell, *current_sub_cell));
         // recurse
         } else {
             // setup range start
-            COMPILER__cell_range cell_range;
+            SAILOR__cell_ID_buffer cell_range;
             cell_range.start = *current_sub_cell;
 
             COMPILER__accountling_variable_range member_range;
@@ -2132,7 +2132,7 @@ COMPILER__accountling_variable_range COMPILER__account__functions__mark_variable
 // generate variables from source variable
 void COMPILER__account__functions__mark_variable__generate_master_variable_and_sub_variables(COMPILER__accountling_structures structures, COMPILER__accountling_function* accountling_function, COMPILER__parsling_argument name, COMPILER__variable_type_index master_type, COMPILER__error* error) {
     // reserve cells
-    COMPILER__cell_range cell_range = COMPILER__calculate_and_advance__cells(structures, accountling_function, master_type);
+    SAILOR__cell_ID_buffer cell_range = COMPILER__calculate_and_advance__cells(structures, accountling_function, master_type);
 
     // declare sub-variables
     SAILOR__cell_ID current_sub_cell = cell_range.start;

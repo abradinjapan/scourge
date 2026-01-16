@@ -16,9 +16,9 @@ typedef struct COMPILER__generation_function {
     SAILOR__counted_list data_offsets; // SAILOR__offset
 
     // cell ranges
-    COMPILER__cell_range cells__inputs; // function io inputs
-    COMPILER__cell_range cells__outputs; // function io outputs
-    COMPILER__cell_range cells__workspace; // all workspace cells
+    SAILOR__cell_ID_buffer cells__inputs; // function io inputs
+    SAILOR__cell_ID_buffer cells__outputs; // function io outputs
+    SAILOR__cell_ID_buffer cells__workspace; // all workspace cells
 
     // data
     SAILOR__counted_list data__user_defined_strings; // copied from accounting, DO NOT FREE!
@@ -148,7 +148,7 @@ void COMPILER__generate__user_defined_function_scope(COMPILER__generation_worksp
             break;
         case COMPILER__ast__predefined__set__string:
             SAILOR__code__write_cell(sailor, (SAILOR__cell)((SAILOR__offset*)(*function).data_offsets.list.buffer.start)[statement.set_string__string_value_index], SAILOR__srt__temp__offset);
-            SAILOR__code__retrieve_embedded_buffer(sailor, SAILOR__sft__always_run, SAILOR__srt__temp__offset, COMPILER__generate__use_variable(set_string__variable_argument).cells.start, COMPILER__generate__use_variable(set_string__variable_argument).cells.end);
+            SAILOR__code__retrieve_embedded_buffer(sailor, SAILOR__sft__always_run, SAILOR__srt__temp__offset, SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(set_string__variable_argument).cells.start, COMPILER__generate__use_variable(set_string__variable_argument).cells.end));
 
             break;
         case COMPILER__ast__predefined__print__character:
@@ -308,7 +308,7 @@ void COMPILER__generate__user_defined_function_scope(COMPILER__generation_worksp
             break;
         case COMPILER__ast__predefined__structure__structure_to_buffer:
             // calculate addresses
-            SAILOR__code__calculate__addresses_for_cell_range_from_context(sailor, SAILOR__sft__always_run, COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.start, COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.end, SAILOR__srt__temp__buffer_1__start, SAILOR__srt__temp__buffer_1__end);
+            SAILOR__code__calculate__addresses_for_cell_range_from_context(sailor, SAILOR__sft__always_run, SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.start, COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.end), SAILOR__create__cell_ID_buffer(SAILOR__srt__temp__buffer_1__start, SAILOR__srt__temp__buffer_1__end));
 
             // perform write
             SAILOR__code__buffer_to_buffer__low_to_high(sailor, SAILOR__create__cell_ID_buffer(SAILOR__srt__temp__buffer_1__start, SAILOR__srt__temp__buffer_1__end), SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(structure_buffer_mover__buffer).cells.start, COMPILER__generate__use_variable(structure_buffer_mover__buffer).cells.end));
@@ -320,7 +320,7 @@ void COMPILER__generate__user_defined_function_scope(COMPILER__generation_worksp
             break;
         case COMPILER__ast__predefined__structure__buffer_to_structure:
             // calculate addresses
-            SAILOR__code__calculate__addresses_for_cell_range_from_context(sailor, SAILOR__sft__always_run, COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.start, COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.end, SAILOR__srt__temp__buffer_1__start, SAILOR__srt__temp__buffer_1__end);
+            SAILOR__code__calculate__addresses_for_cell_range_from_context(sailor, SAILOR__sft__always_run, SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.start, COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.end), SAILOR__create__cell_ID_buffer(SAILOR__srt__temp__buffer_1__start, SAILOR__srt__temp__buffer_1__end));
 
             // perform write
             SAILOR__code__buffer_to_buffer__low_to_high(sailor, SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(structure_buffer_mover__buffer).cells.start, COMPILER__generate__use_variable(structure_buffer_mover__buffer).cells.end), SAILOR__create__cell_ID_buffer(SAILOR__srt__temp__buffer_1__start, SAILOR__srt__temp__buffer_1__end));
@@ -486,7 +486,7 @@ void COMPILER__generate__user_defined_function(COMPILER__generation_workspace* w
     (*function).offset__function_start = SAILOR__get__offset(sailor);
 
     // setup function prologue
-    SAILOR__code__preserve_workspace(sailor, SAILOR__sft__always_run, (*function).cells__workspace.start, (*function).cells__workspace.end);
+    SAILOR__code__preserve_workspace(sailor, SAILOR__sft__always_run, (*function).cells__workspace);
 
     // setup function io index
     current_function_io_register = SAILOR__srt__start__function_io;
@@ -534,7 +534,7 @@ void COMPILER__generate__user_defined_function(COMPILER__generation_workspace* w
     }
 
     // setup function epilogue
-    SAILOR__code__restore_workspace(sailor, SAILOR__sft__always_run, (*function).cells__workspace.start, (*function).cells__workspace.end);
+    SAILOR__code__restore_workspace(sailor, SAILOR__sft__always_run, (*function).cells__workspace);
 
     // return to caller
     SAILOR__code__jump__explicit(sailor, SAILOR__sft__always_run, SAILOR__srt__return_address);

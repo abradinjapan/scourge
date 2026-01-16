@@ -186,7 +186,7 @@ void SAILOR__write_next__buffer_contents(SAILOR__workspace* workspace, SAILOR__b
 }
 
 /* Scraplet Groups */
-// buffer
+// cell ID buffer
 typedef struct SAILOR__cell_ID_buffer {
     SAILOR__cell_ID start;
     SAILOR__cell_ID end;
@@ -200,6 +200,11 @@ SAILOR__cell_ID_buffer SAILOR__create__cell_ID_buffer(SAILOR__cell_ID start, SAI
     output.end = end;
 
     return output;
+}
+
+// create null cell_ID_buffer
+SAILOR__cell_ID_buffer SAILOR__create_null__cell_ID_buffer() {
+    return SAILOR__create__cell_ID_buffer(SAILOR__unused_cell_ID, SAILOR__unused_cell_ID);
 }
 
 // timestamp
@@ -467,11 +472,6 @@ void SAILOR__code__debug__search_for_allocation(SAILOR__workspace* workspace, SA
 }
 
 /* Stack ABI Defines */
-// types
-typedef u64 SAILOR__preserve;
-typedef SAILOR__preserve SAILOR__preserve__start;
-typedef SAILOR__preserve SAILOR__preserve__end;
-
 // stack cell types
 typedef enum SAILOR__srt {
     // start of cells
@@ -662,9 +662,9 @@ void SAILOR__code__pop_cell(SAILOR__workspace* workspace, SAILOR__flag_ID flag, 
 }
 
 // calculate a buffer's length
-void SAILOR__code__calculate__buffer_length(SAILOR__workspace* workspace, SAILOR__flag_ID flag, SAILOR__cell_ID buffer_start, SAILOR__cell_ID buffer_end, SAILOR__cell_ID buffer_length) {
+void SAILOR__code__calculate__buffer_length(SAILOR__workspace* workspace, SAILOR__flag_ID flag, SAILOR__cell_ID_buffer buffer, SAILOR__cell_ID buffer_length) {
     // subtract end and start
-	SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_subtract, buffer_end, buffer_start, SAILOR__unused_cell_ID, buffer_length);
+	SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_subtract, buffer.end, buffer.start, SAILOR__unused_cell_ID, buffer_length);
 
     // convert difference to length
 	SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_add, buffer_length, SAILOR__srt__constant__1, SAILOR__unused_cell_ID, buffer_length);
@@ -833,7 +833,7 @@ void SAILOR__code__start(SAILOR__workspace* workspace, SAILOR__stack_size stack_
 }
 
 // preserve workspace
-void SAILOR__code__preserve_workspace(SAILOR__workspace* workspace, SAILOR__flag_ID flag, SAILOR__preserve__start preserve_start, SAILOR__preserve__end preserve_end) {
+void SAILOR__code__preserve_workspace(SAILOR__workspace* workspace, SAILOR__flag_ID flag, SAILOR__cell_ID_buffer preserve) {
     // preserve flags
     SAILOR__code__push_cell(workspace, flag, SAILOR__rt__flags_0);
     SAILOR__code__push_cell(workspace, flag, SAILOR__rt__flags_1);
@@ -844,7 +844,7 @@ void SAILOR__code__preserve_workspace(SAILOR__workspace* workspace, SAILOR__flag
     SAILOR__code__push_cell(workspace, flag, SAILOR__rt__error_code);
 
     // preserve workspace cells
-    for (SAILOR__preserve i = preserve_start; i <= preserve_end; i++) {
+    for (SAILOR__cell_ID i = preserve.start; i <= preserve.end; i++) {
         // preserve cell
         SAILOR__code__push_cell(workspace, flag, i);
     }
@@ -853,9 +853,9 @@ void SAILOR__code__preserve_workspace(SAILOR__workspace* workspace, SAILOR__flag
 }
 
 // restore workspace
-void SAILOR__code__restore_workspace(SAILOR__workspace* workspace, SAILOR__flag_ID flag, SAILOR__preserve__start preserve_start, SAILOR__preserve__end preserve_end) {
+void SAILOR__code__restore_workspace(SAILOR__workspace* workspace, SAILOR__flag_ID flag, SAILOR__cell_ID_buffer preserve) {
     // restore workspace cells
-    for (SAILOR__preserve i = preserve_end; i >= preserve_start; i--) {
+    for (SAILOR__cell_ID i = preserve.end; i >= preserve.start; i--) {
         // restore cell
         SAILOR__code__pop_cell(workspace, flag, i);
     }
@@ -934,7 +934,7 @@ void SAILOR__code__operate__jump__static(SAILOR__workspace* workspace, SAILOR__f
 }
 
 // retrieve an embedded buffer
-void SAILOR__code__retrieve_embedded_buffer(SAILOR__workspace* workspace, SAILOR__flag_ID flag, SAILOR__cell_ID program_offset, SAILOR__cell_ID buffer_start, SAILOR__cell_ID buffer_end) {
+void SAILOR__code__retrieve_embedded_buffer(SAILOR__workspace* workspace, SAILOR__flag_ID flag, SAILOR__cell_ID program_offset, SAILOR__cell_ID_buffer buffer) {
     // calculate buffer start
     SAILOR__code__calculate_dynamically__offset_address(workspace, flag, program_offset, SAILOR__srt__temp__address);
 
@@ -943,17 +943,17 @@ void SAILOR__code__retrieve_embedded_buffer(SAILOR__workspace* workspace, SAILOR
     SAILOR__code__address_to_cell(workspace, flag, SAILOR__srt__temp__address, SAILOR__srt__temp__byte_count, SAILOR__srt__temp__length);
 
     // calculate buffer data start
-    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_add, SAILOR__srt__temp__address, SAILOR__srt__constant__cell_byte_size, SAILOR__unused_cell_ID, buffer_start);
+    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_add, SAILOR__srt__temp__address, SAILOR__srt__constant__cell_byte_size, SAILOR__unused_cell_ID, buffer.start);
 
     // calculate buffer data end
-    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_add, buffer_start, SAILOR__srt__temp__length, SAILOR__unused_cell_ID, SAILOR__srt__temp__address);
-    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_subtract, SAILOR__srt__temp__address, SAILOR__srt__constant__1, SAILOR__unused_cell_ID, buffer_end);
+    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_add, buffer.start, SAILOR__srt__temp__length, SAILOR__unused_cell_ID, SAILOR__srt__temp__address);
+    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_subtract, SAILOR__srt__temp__address, SAILOR__srt__constant__1, SAILOR__unused_cell_ID, buffer.end);
 
     return;
 }
 
 // setup context
-void SAILOR__code__setup__context(SAILOR__workspace* workspace, SAILOR__cell_ID program_buffer_start, SAILOR__cell_ID program_buffer_end, SAILOR__cell_ID_buffer context) {
+void SAILOR__code__setup__context(SAILOR__workspace* workspace, SAILOR__cell_ID_buffer program_buffer, SAILOR__cell_ID_buffer context) {
     // setup allocation size
     SAILOR__code__write_cell(workspace, (SAILOR__cell)sizeof(SAILOR__context), SAILOR__srt__temp__write);
 
@@ -963,21 +963,21 @@ void SAILOR__code__setup__context(SAILOR__workspace* workspace, SAILOR__cell_ID 
     // setup skeleton context
     // setup buffer start
     SAILOR__code__cell_to_cell(workspace, SAILOR__sft__always_run, context.start, SAILOR__srt__temp__address);
-    SAILOR__code__cell_to_address(workspace, SAILOR__sft__always_run, program_buffer_start, SAILOR__srt__constant__cell_byte_size, SAILOR__srt__temp__address);
+    SAILOR__code__cell_to_address(workspace, SAILOR__sft__always_run, program_buffer.start, SAILOR__srt__constant__cell_byte_size, SAILOR__srt__temp__address);
 
     // setup current address
     SAILOR__code__operate(workspace, SAILOR__sft__always_run, SAILOR__ot__integer_add, SAILOR__srt__temp__address, SAILOR__srt__constant__cell_byte_size, SAILOR__unused_cell_ID, SAILOR__srt__temp__address);
-    SAILOR__code__cell_to_address(workspace, SAILOR__sft__always_run, program_buffer_end, SAILOR__srt__constant__cell_byte_size, SAILOR__srt__temp__address);
+    SAILOR__code__cell_to_address(workspace, SAILOR__sft__always_run, program_buffer.end, SAILOR__srt__constant__cell_byte_size, SAILOR__srt__temp__address);
 
     // setup end address
     SAILOR__code__operate(workspace, SAILOR__sft__always_run, SAILOR__ot__integer_add, SAILOR__srt__temp__address, SAILOR__srt__constant__cell_byte_size, SAILOR__unused_cell_ID, SAILOR__srt__temp__address);
-    SAILOR__code__cell_to_address(workspace, SAILOR__sft__always_run, program_buffer_start, SAILOR__srt__constant__cell_byte_size, SAILOR__srt__temp__address);
+    SAILOR__code__cell_to_address(workspace, SAILOR__sft__always_run, program_buffer.start, SAILOR__srt__constant__cell_byte_size, SAILOR__srt__temp__address);
     
     return;
 }
 
 // calculate buffer for cell range
-void SAILOR__code__calculate__addresses_for_cell_range_from_context(SAILOR__workspace* workspace, SAILOR__flag_ID flag, SAILOR__cell_ID range_start, SAILOR__cell_ID range_end, SAILOR__cell_ID buffer_start, SAILOR__cell_ID buffer_end) {
+void SAILOR__code__calculate__addresses_for_cell_range_from_context(SAILOR__workspace* workspace, SAILOR__flag_ID flag, SAILOR__cell_ID_buffer range, SAILOR__cell_ID_buffer buffer) {
     // setup cell ids
     SAILOR__cell_ID_buffer temp_cell_ID_buffer = SAILOR__create__cell_ID_buffer(SAILOR__srt__temp__buffer_0__start, SAILOR__srt__temp__buffer_0__end);
     
@@ -985,15 +985,15 @@ void SAILOR__code__calculate__addresses_for_cell_range_from_context(SAILOR__work
     SAILOR__code__debug__get_current_context(workspace, temp_cell_ID_buffer);
 
     // setup starting address
-    SAILOR__code__write_cell(workspace, (SAILOR__cell)(SAILOR__u64)range_start, SAILOR__srt__temp__cell_ID);
+    SAILOR__code__write_cell(workspace, (SAILOR__cell)(SAILOR__u64)range.start, SAILOR__srt__temp__cell_ID);
     SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_multiply, SAILOR__srt__constant__cell_byte_size, SAILOR__srt__temp__cell_ID, SAILOR__unused_cell_ID, SAILOR__srt__temp__length);
-    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_add, temp_cell_ID_buffer.start, SAILOR__srt__temp__length, SAILOR__unused_cell_ID, buffer_start);
+    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_add, temp_cell_ID_buffer.start, SAILOR__srt__temp__length, SAILOR__unused_cell_ID, buffer.start);
 
     // setup end address
-    SAILOR__code__write_cell(workspace, (SAILOR__cell)(SAILOR__u64)range_end + 1, SAILOR__srt__temp__cell_ID);
+    SAILOR__code__write_cell(workspace, (SAILOR__cell)(SAILOR__u64)range.end + 1, SAILOR__srt__temp__cell_ID);
     SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_multiply, SAILOR__srt__constant__cell_byte_size, SAILOR__srt__temp__cell_ID, SAILOR__unused_cell_ID, SAILOR__srt__temp__length);
     SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_subtract, SAILOR__srt__temp__length, SAILOR__srt__constant__1, SAILOR__unused_cell_ID, SAILOR__srt__temp__length);
-    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_add, temp_cell_ID_buffer.start, SAILOR__srt__temp__length, SAILOR__unused_cell_ID, buffer_end);
+    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_add, temp_cell_ID_buffer.start, SAILOR__srt__temp__length, SAILOR__unused_cell_ID, buffer.end);
 
     return;
 }
