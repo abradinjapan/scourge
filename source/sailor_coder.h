@@ -202,6 +202,22 @@ SAILOR__cell_ID_buffer SAILOR__create__cell_ID_buffer(SAILOR__cell_ID start, SAI
     return output;
 }
 
+// timestamp
+typedef struct SAILOR__cell_ID_timestamp {
+    SAILOR__cell_ID seconds;
+    SAILOR__cell_ID nanoseconds;
+} SAILOR__cell_ID_timestamp;
+
+// create cell_id_timestamp
+SAILOR__cell_ID_timestamp SAILOR__create__cell_ID_timestamp(SAILOR__cell_ID seconds, SAILOR__cell_ID nanoseconds) {
+    SAILOR__cell_ID_timestamp output;
+
+    output.seconds = seconds;
+    output.nanoseconds = nanoseconds;
+
+    return output;
+}
+
 /* Write Instructions */
 // write buffer data
 void SAILOR__code__buffer_contents(SAILOR__workspace* workspace, SAILOR__buffer buffer) {
@@ -313,35 +329,35 @@ void SAILOR__code__buffer_to_file(SAILOR__workspace* workspace, SAILOR__cell_ID_
 }
 
 // write delete file instruction
-void SAILOR__code__delete_file(SAILOR__workspace* workspace, SAILOR__cell_ID file_path_start, SAILOR__cell_ID file_path_end) {
+void SAILOR__code__delete_file(SAILOR__workspace* workspace, SAILOR__cell_ID_buffer file_path) {
     // write instruction
     SAILOR__write_next__instruction_ID(workspace, SAILOR__it__delete_file);
-    SAILOR__write_next__cell_ID(workspace, file_path_start);
-    SAILOR__write_next__cell_ID(workspace, file_path_end);
+    SAILOR__write_next__cell_ID(workspace, file_path.start);
+    SAILOR__write_next__cell_ID(workspace, file_path.end);
 
     return;
 }
 
 // write buffer to buffer instruction
-void SAILOR__code__buffer_to_buffer__low_to_high(SAILOR__workspace* workspace, SAILOR__cell_ID source_start, SAILOR__cell_ID source_end, SAILOR__cell_ID destination_start, SAILOR__cell_ID destination_end) {
+void SAILOR__code__buffer_to_buffer__low_to_high(SAILOR__workspace* workspace, SAILOR__cell_ID_buffer source, SAILOR__cell_ID_buffer destination) {
     // write instruction
     SAILOR__write_next__instruction_ID(workspace, SAILOR__it__buffer_to_buffer__low_to_high);
-    SAILOR__write_next__cell_ID(workspace, source_start);
-    SAILOR__write_next__cell_ID(workspace, source_end);
-    SAILOR__write_next__cell_ID(workspace, destination_start);
-    SAILOR__write_next__cell_ID(workspace, destination_end);
+    SAILOR__write_next__cell_ID(workspace, source.start);
+    SAILOR__write_next__cell_ID(workspace, source.end);
+    SAILOR__write_next__cell_ID(workspace, destination.start);
+    SAILOR__write_next__cell_ID(workspace, destination.end);
 
     return;
 }
 
 // write buffer to buffer instruction
-void SAILOR__code__buffer_to_buffer__high_to_low(SAILOR__workspace* workspace, SAILOR__cell_ID source_start, SAILOR__cell_ID source_end, SAILOR__cell_ID destination_start, SAILOR__cell_ID destination_end) {
+void SAILOR__code__buffer_to_buffer__high_to_low(SAILOR__workspace* workspace, SAILOR__cell_ID_buffer source, SAILOR__cell_ID_buffer destination) {
     // write instruction
     SAILOR__write_next__instruction_ID(workspace, SAILOR__it__buffer_to_buffer__high_to_low);
-    SAILOR__write_next__cell_ID(workspace, source_start);
-    SAILOR__write_next__cell_ID(workspace, source_end);
-    SAILOR__write_next__cell_ID(workspace, destination_start);
-    SAILOR__write_next__cell_ID(workspace, destination_end);
+    SAILOR__write_next__cell_ID(workspace, source.start);
+    SAILOR__write_next__cell_ID(workspace, source.end);
+    SAILOR__write_next__cell_ID(workspace, destination.start);
+    SAILOR__write_next__cell_ID(workspace, destination.end);
 
     return;
 }
@@ -370,22 +386,22 @@ void SAILOR__code__compile(SAILOR__workspace* workspace, SAILOR__cell_ID user_co
 }
 
 // write run instruction
-void SAILOR__code__run(SAILOR__workspace* workspace, SAILOR__cell_ID context_buffer_start, SAILOR__cell_ID context_buffer_end, SAILOR__cell_ID instruction_count) {
+void SAILOR__code__run(SAILOR__workspace* workspace, SAILOR__cell_ID_buffer context_buffer, SAILOR__cell_ID instruction_count) {
     // write instruction
     SAILOR__write_next__instruction_ID(workspace, SAILOR__it__run);
-    SAILOR__write_next__cell_ID(workspace, context_buffer_start);
-    SAILOR__write_next__cell_ID(workspace, context_buffer_end);
+    SAILOR__write_next__cell_ID(workspace, context_buffer.start);
+    SAILOR__write_next__cell_ID(workspace, context_buffer.end);
     SAILOR__write_next__cell_ID(workspace, instruction_count);
 
     return;
 }
 
 // get time instruction
-void SAILOR__code__get_time(SAILOR__workspace* workspace, SAILOR__cell_ID time_in_seconds, SAILOR__cell_ID time_in_nanoseconds) {
+void SAILOR__code__get_time(SAILOR__workspace* workspace, SAILOR__cell_ID_timestamp time) {
     // write instruction
     SAILOR__write_next__instruction_ID(workspace, SAILOR__it__get_time);
-    SAILOR__write_next__cell_ID(workspace, time_in_seconds);
-    SAILOR__write_next__cell_ID(workspace, time_in_nanoseconds);
+    SAILOR__write_next__cell_ID(workspace, time.seconds);
+    SAILOR__write_next__cell_ID(workspace, time.nanoseconds);
 
     return;
 }
@@ -400,11 +416,11 @@ void SAILOR__code__debug__putchar(SAILOR__workspace* workspace, SAILOR__cell_ID 
 }
 
 // write debug fgets instruction
-void SAILOR__code__debug__fgets(SAILOR__workspace* workspace, SAILOR__cell_ID buffer_start_ID, SAILOR__cell_ID buffer_end_ID) {
+void SAILOR__code__debug__fgets(SAILOR__workspace* workspace, SAILOR__cell_ID_buffer gotten_text) {
     // write instruction
     SAILOR__write_next__instruction_ID(workspace, SAILOR__it__debug__fgets);
-    SAILOR__write_next__cell_ID(workspace, buffer_start_ID);
-    SAILOR__write_next__cell_ID(workspace, buffer_end_ID);
+    SAILOR__write_next__cell_ID(workspace, gotten_text.start);
+    SAILOR__write_next__cell_ID(workspace, gotten_text.end);
 
     return;
 }
@@ -428,24 +444,24 @@ void SAILOR__code__debug__mark_code_section(SAILOR__workspace* workspace, SAILOR
 }
 
 // write debug get current context instruction
-void SAILOR__code__debug__get_current_context(SAILOR__workspace* workspace, SAILOR__cell_ID buffer_start, SAILOR__cell_ID buffer_end) {
+void SAILOR__code__debug__get_current_context(SAILOR__workspace* workspace, SAILOR__cell_ID_buffer context) {
     // write instruction
     SAILOR__write_next__instruction_ID(workspace, SAILOR__it__debug__get_current_context);
-    SAILOR__write_next__cell_ID(workspace, buffer_start);
-    SAILOR__write_next__cell_ID(workspace, buffer_end);
+    SAILOR__write_next__cell_ID(workspace, context.start);
+    SAILOR__write_next__cell_ID(workspace, context.end);
 
     return;
 }
 
 // write debug search for allocation instruction
-void SAILOR__code__debug__search_for_allocation(SAILOR__workspace* workspace, SAILOR__cell_ID source_buffer_start, SAILOR__cell_ID source_buffer_end, SAILOR__cell_ID was_found, SAILOR__cell_ID found_buffer_start, SAILOR__cell_ID found_buffer_end) {
+void SAILOR__code__debug__search_for_allocation(SAILOR__workspace* workspace, SAILOR__cell_ID_buffer source_buffer, SAILOR__cell_ID was_found, SAILOR__cell_ID_buffer found_buffer) {
     // write instruction
     SAILOR__write_next__instruction_ID(workspace, SAILOR__it__debug__search_for_allocation);
-    SAILOR__write_next__cell_ID(workspace, source_buffer_start);
-    SAILOR__write_next__cell_ID(workspace, source_buffer_end);
+    SAILOR__write_next__cell_ID(workspace, source_buffer.start);
+    SAILOR__write_next__cell_ID(workspace, source_buffer.end);
     SAILOR__write_next__cell_ID(workspace, was_found);
-    SAILOR__write_next__cell_ID(workspace, found_buffer_start);
-    SAILOR__write_next__cell_ID(workspace, found_buffer_end);
+    SAILOR__write_next__cell_ID(workspace, found_buffer.start);
+    SAILOR__write_next__cell_ID(workspace, found_buffer.end);
 
     return;
 }
@@ -962,19 +978,22 @@ void SAILOR__code__setup__context(SAILOR__workspace* workspace, SAILOR__cell_ID 
 
 // calculate buffer for cell range
 void SAILOR__code__calculate__addresses_for_cell_range_from_context(SAILOR__workspace* workspace, SAILOR__flag_ID flag, SAILOR__cell_ID range_start, SAILOR__cell_ID range_end, SAILOR__cell_ID buffer_start, SAILOR__cell_ID buffer_end) {
+    // setup cell ids
+    SAILOR__cell_ID_buffer temp_cell_ID_buffer = SAILOR__create__cell_ID_buffer(SAILOR__srt__temp__buffer_0__start, SAILOR__srt__temp__buffer_0__end);
+    
     // get cell address range from context
-    SAILOR__code__debug__get_current_context(workspace, SAILOR__srt__temp__buffer_0__start, SAILOR__srt__temp__buffer_0__end);
+    SAILOR__code__debug__get_current_context(workspace, temp_cell_ID_buffer);
 
     // setup starting address
     SAILOR__code__write_cell(workspace, (SAILOR__cell)(SAILOR__u64)range_start, SAILOR__srt__temp__cell_ID);
     SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_multiply, SAILOR__srt__constant__cell_byte_size, SAILOR__srt__temp__cell_ID, SAILOR__unused_cell_ID, SAILOR__srt__temp__length);
-    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_add, SAILOR__srt__temp__buffer_0__start, SAILOR__srt__temp__length, SAILOR__unused_cell_ID, buffer_start);
+    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_add, temp_cell_ID_buffer.start, SAILOR__srt__temp__length, SAILOR__unused_cell_ID, buffer_start);
 
     // setup end address
     SAILOR__code__write_cell(workspace, (SAILOR__cell)(SAILOR__u64)range_end + 1, SAILOR__srt__temp__cell_ID);
     SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_multiply, SAILOR__srt__constant__cell_byte_size, SAILOR__srt__temp__cell_ID, SAILOR__unused_cell_ID, SAILOR__srt__temp__length);
     SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_subtract, SAILOR__srt__temp__length, SAILOR__srt__constant__1, SAILOR__unused_cell_ID, SAILOR__srt__temp__length);
-    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_add, SAILOR__srt__temp__buffer_0__start, SAILOR__srt__temp__length, SAILOR__unused_cell_ID, buffer_end);
+    SAILOR__code__operate(workspace, flag, SAILOR__ot__integer_add, temp_cell_ID_buffer.start, SAILOR__srt__temp__length, SAILOR__unused_cell_ID, buffer_end);
 
     return;
 }

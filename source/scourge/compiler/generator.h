@@ -311,7 +311,7 @@ void COMPILER__generate__user_defined_function_scope(COMPILER__generation_worksp
             SAILOR__code__calculate__addresses_for_cell_range_from_context(sailor, SAILOR__sft__always_run, COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.start, COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.end, SAILOR__srt__temp__buffer_1__start, SAILOR__srt__temp__buffer_1__end);
 
             // perform write
-            SAILOR__code__buffer_to_buffer__low_to_high(sailor, SAILOR__srt__temp__buffer_1__start, SAILOR__srt__temp__buffer_1__end, COMPILER__generate__use_variable(structure_buffer_mover__buffer).cells.start, COMPILER__generate__use_variable(structure_buffer_mover__buffer).cells.end);
+            SAILOR__code__buffer_to_buffer__low_to_high(sailor, SAILOR__create__cell_ID_buffer(SAILOR__srt__temp__buffer_1__start, SAILOR__srt__temp__buffer_1__end), SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(structure_buffer_mover__buffer).cells.start, COMPILER__generate__use_variable(structure_buffer_mover__buffer).cells.end));
 
             // calculate advancement
             SAILOR__code__write_cell(sailor, (SAILOR__cell)(SAILOR__u64)((COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.end - COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.start + 1) * sizeof(SAILOR__cell)), SAILOR__srt__temp__length);
@@ -323,7 +323,7 @@ void COMPILER__generate__user_defined_function_scope(COMPILER__generation_worksp
             SAILOR__code__calculate__addresses_for_cell_range_from_context(sailor, SAILOR__sft__always_run, COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.start, COMPILER__generate__use_variable(structure_buffer_mover__structure).cells.end, SAILOR__srt__temp__buffer_1__start, SAILOR__srt__temp__buffer_1__end);
 
             // perform write
-            SAILOR__code__buffer_to_buffer__low_to_high(sailor, COMPILER__generate__use_variable(structure_buffer_mover__buffer).cells.start, COMPILER__generate__use_variable(structure_buffer_mover__buffer).cells.end, SAILOR__srt__temp__buffer_1__start, SAILOR__srt__temp__buffer_1__end);
+            SAILOR__code__buffer_to_buffer__low_to_high(sailor, SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(structure_buffer_mover__buffer).cells.start, COMPILER__generate__use_variable(structure_buffer_mover__buffer).cells.end), SAILOR__create__cell_ID_buffer(SAILOR__srt__temp__buffer_1__start, SAILOR__srt__temp__buffer_1__end));
 
             break;
         case COMPILER__ast__predefined__mover__address_to_cell:
@@ -345,19 +345,19 @@ void COMPILER__generate__user_defined_function_scope(COMPILER__generation_worksp
             
             break;
         case COMPILER__ast__predefined__mover__buffer_copy__low_to_high:
-            SAILOR__code__buffer_to_buffer__low_to_high(sailor, COMPILER__generate__use_variable(file_buffer_mover__buffer_0).cells.start, COMPILER__generate__use_variable(file_buffer_mover__buffer_0).cells.end, COMPILER__generate__use_variable(file_buffer_mover__buffer_1).cells.start, COMPILER__generate__use_variable(file_buffer_mover__buffer_1).cells.end);
+            SAILOR__code__buffer_to_buffer__low_to_high(sailor, SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(file_buffer_mover__buffer_0).cells.start, COMPILER__generate__use_variable(file_buffer_mover__buffer_0).cells.end), SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(file_buffer_mover__buffer_1).cells.start, COMPILER__generate__use_variable(file_buffer_mover__buffer_1).cells.end));
             
             break;
         case COMPILER__ast__predefined__mover__buffer_copy__high_to_low:
-            SAILOR__code__buffer_to_buffer__high_to_low(sailor, COMPILER__generate__use_variable(file_buffer_mover__buffer_0).cells.start, COMPILER__generate__use_variable(file_buffer_mover__buffer_0).cells.end, COMPILER__generate__use_variable(file_buffer_mover__buffer_1).cells.start, COMPILER__generate__use_variable(file_buffer_mover__buffer_1).cells.end);
+            SAILOR__code__buffer_to_buffer__high_to_low(sailor, SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(file_buffer_mover__buffer_0).cells.start, COMPILER__generate__use_variable(file_buffer_mover__buffer_0).cells.end), SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(file_buffer_mover__buffer_1).cells.start, COMPILER__generate__use_variable(file_buffer_mover__buffer_1).cells.end));
             
             break;
         case COMPILER__ast__predefined__delete_file:
-            SAILOR__code__delete_file(sailor, COMPILER__generate__use_variable(file_buffer_mover__file_path).cells.start, COMPILER__generate__use_variable(file_buffer_mover__file_path).cells.start + 1);
+            SAILOR__code__delete_file(sailor, SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(file_buffer_mover__file_path).cells.start, COMPILER__generate__use_variable(file_buffer_mover__file_path).cells.start + 1));
 
             break;
         case COMPILER__ast__predefined__allocation__find:
-            SAILOR__code__debug__search_for_allocation(sailor, COMPILER__generate__use_variable(allocation__source_buffer).cells.start, COMPILER__generate__use_variable(allocation__source_buffer).cells.end, COMPILER__generate__use_variable(allocation__was_found).cells.start, COMPILER__generate__use_variable(allocation__found_buffer).cells.start, COMPILER__generate__use_variable(allocation__found_buffer).cells.end);
+            SAILOR__code__debug__search_for_allocation(sailor, SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(allocation__source_buffer).cells.start, COMPILER__generate__use_variable(allocation__source_buffer).cells.end), COMPILER__generate__use_variable(allocation__was_found).cells.start, SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(allocation__found_buffer).cells.start, COMPILER__generate__use_variable(allocation__found_buffer).cells.end));
             
             break;
         case COMPILER__ast__predefined__compilation__compile:
@@ -400,11 +400,11 @@ void COMPILER__generate__user_defined_function_scope(COMPILER__generation_worksp
 
             break;
         case COMPILER__ast__predefined__context__run:
-            SAILOR__code__run(sailor, COMPILER__generate__use_variable(context__context_buffer).cells.start, COMPILER__generate__use_variable(context__context_buffer).cells.start + 1, COMPILER__generate__use_variable(context__instruction_count).cells.start);
+            SAILOR__code__run(sailor, SAILOR__create__cell_ID_buffer(COMPILER__generate__use_variable(context__context_buffer).cells.start, COMPILER__generate__use_variable(context__context_buffer).cells.start + 1), COMPILER__generate__use_variable(context__instruction_count).cells.start);
 
             break;
         case COMPILER__ast__predefined__time__get_current_time:
-            SAILOR__code__get_time(sailor, COMPILER__generate__use_variable(time__get_time_data).cells.start, COMPILER__generate__use_variable(time__get_time_data).cells.start + 1);
+            SAILOR__code__get_time(sailor, SAILOR__create__cell_ID_timestamp(COMPILER__generate__use_variable(time__get_time_data).cells.start, COMPILER__generate__use_variable(time__get_time_data).cells.start + 1));
             
             break;
         case COMPILER__ast__user_defined_function_call:
