@@ -137,34 +137,7 @@ typedef enum COMPILER__pvn {
     COMPILER__pvn__context__input,
     COMPILER__pvn__context__output__result,
     COMPILER__pvn__context__output__error,
-    COMPILER__pvn__call_stack,
-
-    // sailor scraplets
-    COMPILER__pvn__constant__sailor__instruction_ID__byte_size,
-    COMPILER__pvn__constant__sailor__flag_ID__byte_size,
-    COMPILER__pvn__constant__sailor__operation_ID__byte_size,
-    COMPILER__pvn__constant__sailor__cell_ID__byte_size,
-    COMPILER__pvn__constant__sailor__cell__byte_size,
-    COMPILER__pvn__constant__sailor__operation_ID__cell_to_cell,
-    COMPILER__pvn__constant__sailor__operation_ID__bits_or,
-    COMPILER__pvn__constant__sailor__operation_ID__bits_invert,
-    COMPILER__pvn__constant__sailor__operation_ID__bits_and,
-    COMPILER__pvn__constant__sailor__operation_ID__bits_xor,
-    COMPILER__pvn__constant__sailor__operation_ID__bits_shift_higher,
-    COMPILER__pvn__constant__sailor__operation_ID__bits_shift_lower,
-    COMPILER__pvn__constant__sailor__operation_ID__bits_overwrite,
-    COMPILER__pvn__constant__sailor__operation_ID__integer_add,
-    COMPILER__pvn__constant__sailor__operation_ID__integer_subtract,
-    COMPILER__pvn__constant__sailor__operation_ID__integer_multiply,
-    COMPILER__pvn__constant__sailor__operation_ID__integer_division,
-    COMPILER__pvn__constant__sailor__operation_ID__integer_modulous,
-    COMPILER__pvn__constant__sailor__operation_ID__integer_within_range,
-    COMPILER__pvn__constant__sailor__operation_ID__flag_or,
-    COMPILER__pvn__constant__sailor__operation_ID__flag_invert,
-    COMPILER__pvn__constant__sailor__operation_ID__flag_and,
-    COMPILER__pvn__constant__sailor__operation_ID__flag_xor,
-    COMPILER__pvn__constant__sailor__operation_ID__flag_get,
-    COMPILER__pvn__constant__sailor__operation_ID__flag_set,
+    COMPILER__pvn__call_stack
 } COMPILER__pvn;
 // all predefined variable names
 char* COMPILER__global__predefined_variable_names[] = {

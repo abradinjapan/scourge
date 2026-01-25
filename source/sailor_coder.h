@@ -509,20 +509,9 @@ typedef enum SAILOR__srt {
 
     // control flow cells
     SAILOR__srt__return_address,
-    SAILOR__srt__always_run__flag_ID,
-    SAILOR__srt__never_run__flag_ID,
-
-    // sailor data cells
-    SAILOR__srt__sailor_scraplet__instruction_ID__byte_size,
-    SAILOR__srt__sailor_scraplet__flag_ID__byte_size,
-    SAILOR__srt__sailor_scraplet__operation_ID__byte_size,
-    SAILOR__srt__sailor_scraplet__cell_ID__byte_size,
-    SAILOR__srt__sailor_scraplet__cell__byte_size,
-    SAILOR__srt__sailor_scraplet__operation_ID_value__START,
-    SAILOR__srt__sailor_scraplet__operation_ID_value__END = SAILOR__srt__sailor_scraplet__operation_ID_value__START + SAILOR__ot__COUNT,
 
     // temporary cells
-    SAILOR__srt__temp__write = SAILOR__srt__sailor_scraplet__operation_ID_value__END,
+    SAILOR__srt__temp__write,
     SAILOR__srt__temp__offset,
     SAILOR__srt__temp__address,
     SAILOR__srt__temp__flag,
@@ -793,21 +782,6 @@ void SAILOR__code__start(SAILOR__workspace* workspace, SAILOR__stack_size stack_
     SAILOR__code__write_cell(workspace, (SAILOR__cell)sizeof(SAILOR__cell), SAILOR__srt__constant__cell_byte_size);
     SAILOR__code__write_cell(workspace, (SAILOR__cell)sizeof(SAILOR__context), SAILOR__srt__constant__context_byte_size);
     SAILOR__code__write_cell(workspace, (SAILOR__cell)SAILOR__silt__jump__explicit, SAILOR__srt__constant__return_address_offset_creation_size);
-    SAILOR__code__write_cell(workspace, (SAILOR__cell)SAILOR__sft__always_run, SAILOR__srt__always_run__flag_ID);
-    SAILOR__code__write_cell(workspace, (SAILOR__cell)SAILOR__sft__never_run, SAILOR__srt__never_run__flag_ID);
-
-    // setup sailor scraplet constants
-    SAILOR__code__write_cell(workspace, (SAILOR__cell)sizeof(SAILOR__instruction_ID), SAILOR__srt__sailor_scraplet__instruction_ID__byte_size);
-    SAILOR__code__write_cell(workspace, (SAILOR__cell)sizeof(SAILOR__flag_ID), SAILOR__srt__sailor_scraplet__flag_ID__byte_size);
-    SAILOR__code__write_cell(workspace, (SAILOR__cell)sizeof(SAILOR__operation_ID), SAILOR__srt__sailor_scraplet__operation_ID__byte_size);
-    SAILOR__code__write_cell(workspace, (SAILOR__cell)sizeof(SAILOR__cell_ID), SAILOR__srt__sailor_scraplet__cell_ID__byte_size);
-    SAILOR__code__write_cell(workspace, (SAILOR__cell)sizeof(SAILOR__cell), SAILOR__srt__sailor_scraplet__cell__byte_size);
-
-    // generate operation ID scraplet constants
-    for (SAILOR__cell_index operation_ID_list_start = SAILOR__srt__sailor_scraplet__operation_ID_value__START; operation_ID_list_start <= SAILOR__srt__sailor_scraplet__operation_ID_value__END; operation_ID_list_start++) {
-        // write cell
-        SAILOR__code__write_cell(workspace, (SAILOR__cell)(SAILOR__ot__START + operation_ID_list_start), operation_ID_list_start);
-    }
 
     // setup outputs
     SAILOR__code__cell_to_cell(workspace, SAILOR__sft__always_run, SAILOR__srt__constant__0, SAILOR__srt__output_result_buffer_start);
