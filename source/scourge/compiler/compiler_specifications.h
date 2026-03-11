@@ -1024,7 +1024,7 @@ COMPILER__blueprintling COMPILER__global__predefined_one_off_function_calls[] = 
 // advance blueprintling by one
 void COMPILER__next__blueprintling(SAILOR__current* current) {
     // next blueprintling
-    (*current).start += sizeof(COMPILER__blueprintling);
+    (*current).start = (SAILOR__address)((SAILOR__u64)(*current).start + (SAILOR__u64)sizeof(COMPILER__blueprintling));
 
     return;
 }
